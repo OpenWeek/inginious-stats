@@ -1,3 +1,10 @@
-$def with ()
+$def with (course)
 
 $# template
+
+
+$var title: $:course.get_name(user_manager.session_language())
+
+$var Column: $:template_helper.call('course_admin_menu',course=course,current='adv_stats')
+
+<h3>Advanced stats</h3>

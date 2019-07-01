@@ -1,0 +1,4 @@
+include LICENSE
+include README.md
+recursive include inginious-stats/static *
+recursive include inginious-stats/templates *

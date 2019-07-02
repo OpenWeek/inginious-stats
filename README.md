@@ -3,7 +3,7 @@ Plugin INGInious to improve stats view in the course administration
 
 ## Installing
 
-    pip3 install git+https://github.com/UCL-INGI/INGInious-problems-demo
+    pip3 install git+https://github.com/OpenWeek/inginious-stats
 
 ## Activating
 

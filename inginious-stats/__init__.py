@@ -47,17 +47,18 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 error = "Invalid dates"
                 daterange = [now - timedelta(days=14), now]
 
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, None)
 
     def POST_AUTH(self, courseid):
         """ POST Request"""
         print("=============>> POST was called (return the same thing as GET)")
-        data = parse_qs(web.data())
+        data = web.input(stats_from='', stats_to='')
         print("DATA: " + str(data))
+        print(data["stats_to"])
 
         # TODO this is copied from GET_AUTH
         course, __ = self.get_course_and_check_rights(courseid)
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, data)
 
 
 def init(plugin_manager, course_factory, client, plugin_config):  # pylint: disable=unused-argument

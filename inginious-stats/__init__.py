@@ -9,7 +9,7 @@ PATH_TO_PLUGIN = os.path.abspath(os.path.dirname(__file__))
 
 def add_admin_menu(course): # pylint: disable=unused-argument
     """ Add a menu for the contest settings in the administration """
-    return ('adv_stats', '<i class="fa fa-trophy fa-fw"></i>&nbsp; Advanced statistics')
+    return ('adv_stats', '<i class="fa fa-bar-chart fa-fw"></i>&nbsp; Advanced statistics')
 
 
 class StaticMockPage(object):
@@ -32,7 +32,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
-
         course, __ = self.get_course_and_check_rights(courseid)
         tasks = course.get_tasks()
         now = datetime.now().replace(minute=0, second=0, microsecond=0)

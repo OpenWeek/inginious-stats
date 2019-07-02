@@ -21,11 +21,11 @@ $var Column: $:template_helper.call('course_admin_menu',course=course,current='a
     <div class="form-row">
         <div class="form-group col-md-6">
             <label for="stats_from">$:_("Compute stats since")</label>
-            <input name="stats_from" type="datetime-local" class="form-control" id="stats_from" placeholder="From" value="">
+            <input type="text" class="form-control" id="stats_from" placeholder="From" value="" name="stats_from">
         </div>
         <div class="form-group col-md-6">
             <label for="stats_to">$:_("until")</label>
-            <input name="stats_to" type="datetime-local" class="form-control" id="stats_to" placeholder="To" value="">
+            <input type="text" class="form-control" id="stats_to" placeholder="To" value="" name="stats_to">
         </div>
     </div>
     <button class="btn btn-primary btn-block" type="submit"><i class="fa fa-download"></i>$:_("Update")</button>

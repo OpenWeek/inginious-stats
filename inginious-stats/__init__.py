@@ -1,5 +1,6 @@
 import os
 import web
+from urllib.parse import parse_qs
 
 from inginious.frontend.pages.course_admin.utils import INGIniousAdminPage
 from datetime import datetime, date, timedelta
@@ -51,9 +52,12 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 error = "Invalid dates"
                 daterange = [now - timedelta(days=14), now]
 
-        data = web.input(stats_from='', stats_to='')
+        #data = web.input(stats_from='', stats_to='')
         # print(data.stats_from,data.stats_to)
 
+        print("=============>> POST was called (return the same thing as GET)")
+        data = parse_qs(web.data())
+        print("DATA: " + str(data))
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course,'lol')
 
 

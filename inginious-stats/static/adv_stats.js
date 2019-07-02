@@ -50,10 +50,20 @@ window.onload = function() {
         },
         options: {
             scales: {
+				xAxes: [{
+					scaleLabel: {
+						display: true,
+						labelString: 'Grade'
+					}
+				}],
                 yAxes: [{
                     ticks: {
                         beginAtZero: true
-                    }
+                    },
+					scaleLabel: {
+						display: true,
+						labelString: 'Number of submissions'
+					}
                 }]
             }
         }

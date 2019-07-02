@@ -1,5 +1,6 @@
 import os
 import web
+from urllib.parse import parse_qs
 
 from inginious.frontend.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.tags import Tag
@@ -116,6 +117,11 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
         course, __ = self.get_course_and_check_rights(courseid)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course,None)
+
+    def POST_AUTH(self, courseid, f=None, t=None):
+        """ POST Request"""
+        course, __ = self.get_course_and_check_rights(courseid)
         tasks = course.get_tasks()
         now = datetime.now().replace(minute=0, second=0, microsecond=0)
 
@@ -135,10 +141,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         stats_graph = self._graph_stats(courseid, daterange)
 
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, stats_tags)
-
-    def POST_AUTH(self, courseid):
-        """ POST Request"""
-        pass
 
 
 def init(plugin_manager, course_factory, client, plugin_config):  # pylint: disable=unused-argument

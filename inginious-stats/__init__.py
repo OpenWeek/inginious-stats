@@ -33,6 +33,11 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
         course, __ = self.get_course_and_check_rights(courseid)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course,None)
+
+    def POST_AUTH(self, courseid, f=None, t=None):
+        """ POST Request"""
+        course, __ = self.get_course_and_check_rights(courseid)
         tasks = course.get_tasks()
         now = datetime.now().replace(minute=0, second=0, microsecond=0)
 
@@ -46,11 +51,10 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 error = "Invalid dates"
                 daterange = [now - timedelta(days=14), now]
 
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course)
+        data = web.input(stats_from='', stats_to='')
+        # print(data.stats_from,data.stats_to)
 
-    def POST_AUTH(self, courseid):
-        """ POST Request"""
-        pass
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course,'lol')
 
 
 def init(plugin_manager, course_factory, client, plugin_config):  # pylint: disable=unused-argument

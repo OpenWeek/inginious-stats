@@ -8,7 +8,7 @@ $var title: $:course.get_name(user_manager.session_language())
 $var Column: $:template_helper.call('course_admin_menu',course=course,current='adv_stats')
 
 <h2>$:_("Advanced statistics")</h2>
-<form onsubmit="return undefined;">
+<form onsubmit="submitForm()">
     <div class="form-row">
         <div class="form-group col-md-6">
             <label for="stats_from">$:_("Compute stats since")</label>
@@ -21,4 +21,6 @@ $var Column: $:template_helper.call('course_admin_menu',course=course,current='a
     </div>
     <button type="submit" class="btn btn-primary">$:_("Update")</button>
 </form>
+
+<script type="text/javascript" src="../../plugins/stats/static/adv_stats.js"></script>
 

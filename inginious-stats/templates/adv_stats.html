@@ -10,6 +10,11 @@ $var Column: $:template_helper.call('course_admin_menu',course=course,current='a
 <h2>$:_("Advanced statistics")</h2>
 <form onsubmit="submitForm()">
     <div class="form-row">
+        <div class="form-group col-md-12">
+            Something else
+        </div>
+    </div>
+    <div class="form-row">
         <div class="form-group col-md-6">
             <label for="stats_from">$:_("Compute stats since")</label>
             <input type="datetime-local" class="form-control" id="stats_from" placeholder="From" value="">

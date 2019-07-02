@@ -5,11 +5,12 @@ $# template
 
 $var title: $:course.get_name(user_manager.session_language())
 
-<!-- <script src="$get_homepath(True)/static/js/libs/chart.min.js"></script> -->
+<script src="$get_homepath(True)/static/js/libs/chart.min.js"></script>
 
 $var Column: $:template_helper.call('course_admin_menu',course=course,current='adv_stats')
 
 <h2>$:_("Advanced statistics")</h2>
+<h3>Configuration</h3>
 <form onsubmit="submitForm()">
     <div class="form-row">
         <div class="form-group col-md-12">
@@ -29,8 +30,8 @@ $var Column: $:template_helper.call('course_admin_menu',course=course,current='a
     <button type="submit" class="btn btn-primary">$:_("Update")</button>
 </form>
 
-<!-- <h3>$:_("Results")</h3> -->
-<!-- <canvas id="canvas"></canvas> -->
+<h3>$:_("Results")</h3>
+<canvas id="canvas"></canvas>
 
 <script type="text/javascript" src="$get_homepath(True)/plugins/stats/static/adv_stats.js"></script>
 

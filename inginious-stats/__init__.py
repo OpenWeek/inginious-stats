@@ -1,5 +1,6 @@
 import os
 import web
+from urllib.parse import parse_qs
 
 from inginious.frontend.pages.course_admin.utils import INGIniousAdminPage
 from datetime import datetime, date, timedelta
@@ -50,7 +51,13 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
     def POST_AUTH(self, courseid):
         """ POST Request"""
-        pass
+        print("=============>> POST was called (return the same thing as GET)")
+        data = parse_qs(web.data())
+        print("DATA: " + str(data))
+
+        # TODO this is copied from GET_AUTH
+        course, __ = self.get_course_and_check_rights(courseid)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course)
 
 
 def init(plugin_manager, course_factory, client, plugin_config):  # pylint: disable=unused-argument

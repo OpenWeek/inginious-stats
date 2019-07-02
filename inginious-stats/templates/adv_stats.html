@@ -11,7 +11,7 @@ $var Column: $:template_helper.call('course_admin_menu',course=course,current='a
 
 <h2>$:_("Advanced statistics")</h2>
 <h3>Configuration</h3>
-<form onsubmit="submitForm()">
+<form method="post">
     <div class="form-row">
         <div class="form-group col-md-12">
             Something else
@@ -20,11 +20,11 @@ $var Column: $:template_helper.call('course_admin_menu',course=course,current='a
     <div class="form-row">
         <div class="form-group col-md-6">
             <label for="stats_from">$:_("Compute stats since")</label>
-            <input type="datetime-local" class="form-control" id="stats_from" placeholder="From" value="">
+            <input type="text" class="form-control" id="stats_from" placeholder="From" value="" name="stats_from">
         </div>
         <div class="form-group col-md-6">
             <label for="stats_to">$:_("until")</label>
-            <input type="datetime-local" class="form-control" id="stats_to" placeholder="To" value="">
+            <input type="text" class="form-control" id="stats_to" placeholder="To" value="" name="stats_to">
         </div>
     </div>
     <button type="submit" class="btn btn-primary">$:_("Update")</button>

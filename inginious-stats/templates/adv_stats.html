@@ -10,9 +10,6 @@ $var header:
 
 $var Column: $:template_helper.call('course_admin_menu',course=course,current='adv_stats')
 
-$if chart_query is not None:
-	<h1>Got: $chart_query</h1>
-
 <h2>$:_("Advanced statistics")</h2>
 <h3>$:_("Configuration")</h3>
 <form method="post" id="stats_form" action="$get_homepath()/admin/${course.get_id()}/adv_stats">
@@ -59,14 +56,14 @@ $if chart_query is not None:
     <div class="form-row">
         <div class="form-group col-md-12">
             <label for="filter_exercises">$:_("Exercise names (separated by commas)")</label>
-            <input name="filter_exercises" type="text" class="form-control" id="filter_tags" placeholder="None" value="">
+            <input name="filter_exercises" type="text" class="form-control" id="filter_tasks" placeholder="None" value="">
         </div>
     </div>
     <button class="btn btn-primary btn-block" type="submit"><i class="fa fa-download"></i>$:_("Update")</button>
 </form>
-
-<h3>$:_("Results")</h3>
-<canvas id="canvas"></canvas>
+$if chart_query is not None:
+    <h3>$:_("Results")</h3>
+    <canvas id="canvas"></canvas>
 
 <script>
     // Placeholders for a chart

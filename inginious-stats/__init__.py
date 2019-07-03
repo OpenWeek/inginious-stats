@@ -76,7 +76,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                         result[x["username"][0]]["tries"] +=1
         return result
 
-
     def _tags_stats(self, courseid, tasks, daterange):
         stats_tasks = self._tasks_stats(courseid, tasks, daterange)
 
@@ -195,7 +194,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 daterange = [now - timedelta(days=14), now]
 
         stats_tasks = self._task_failed_attempts("s2_make", daterange)
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course,stats_tasks)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, None)
 
     def POST_AUTH(self, courseid):
         """ POST Request"""

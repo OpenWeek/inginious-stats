@@ -24,20 +24,26 @@ function fillFilters(query) {
     }
 }
 
-
-const chartTypeCorrespondence = {
-    "grades-distribution": "bar",
-    "submission-before-perfect": "bar",
-    "lines-per-submission": "bar",
-    "submissions-time": "line",
-    "tag-sorted": "bar"
+//=========== Table ==================
+function addStatsTable() {
+    /* Creates and puts a table of statistics requested by the user on the page. */
+    $("#table-count")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-min")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-max")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-mean")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-median")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-mode")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-variance")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-std-deviation")[0].innerHTML = Math.floor(100 * Math.random());
 }
-const chartTypeLabelCorrespondence = {
-    "grades-distribution": [...Array(21).keys()],
-    "submission-before-perfect": [...Array(31).keys()],
-    "lines-per-submission": [...Array(201).keys()],
-    "submissions-time": ["lundi", "mardi", "mercredi","TODO"],
-    "tag-sorted": ["Timeout", "Segfault", "Cannot compile", "Could compile"]
+
+//============== Charts ====================
+const chartTypeCorrespondence = {
+    "grades-distribution": makeGradeDistroChart,
+    "submission-before-perfect": makeNbSubmissionsBfPerfectChart,
+    "lines-per-submission": makeLinePerSubmissionChart,
+    "submissions-time": makeSubmissionTimeGraph,
+    "tag-sorted": makeTagSortedChart
 }
 
 function makeChart(chartTypeStr) {
@@ -50,11 +56,31 @@ function makeChart(chartTypeStr) {
         data[i] = tmp;
     }
 
+    chartTypeCorrespondence[chartTypeStr](data);
+}
+
+function makeGradeDistroChart(data) {
+    _displayChart("bar", [...Array(21).keys()], data);
+}
+function makeNbSubmissionsBfPerfectChart(data) {
+    _displayChart("bar", [...Array(31).keys()], data);
+}
+function makeLinePerSubmissionChart(data) {
+    _displayChart("bar", [...Array(201).keys()], data);
+}
+function makeSubmissionTimeGraph(data) {
+    _displayChart("bar", ["lundi", "mardi", "mercredi", "TODO"], data);
+}
+function makeTagSortedChart(data) {
+    _displayChart("bar", ["Timeout", "Segfault", "Cannot compile", "Could compile"], data);
+}
+
+function _displayChart(type, labels, data) {
     var ctx = document.getElementById('canvas').getContext('2d');
     var myChart = new Chart(ctx, {
-        type: chartTypeCorrespondence[chartTypeStr],
+        type: type,
         data: {
-            labels: chartTypeLabelCorrespondence[chartTypeStr],
+            labels: labels,
             datasets: [{
                 label: 'Placeholder',
                 data: data,
@@ -99,17 +125,5 @@ function makeChart(chartTypeStr) {
             }
         }
     });
-}
-
-function addStatsTable() {
-    /* Creates and puts a table of statistics requested by the user on the page. */
-    $("#table-count")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-min")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-max")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-mean")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-median")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-mode")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-variance")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-std-deviation")[0].innerHTML = Math.floor(100 * Math.random());
 }
 

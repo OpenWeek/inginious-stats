@@ -20,8 +20,10 @@ $if chart_query is not None:
         <div class="form-group col-md-12">
             <select name="chart_type" id="chart_type">
                 <option value="grades-distribution">$:_("Grades distribution")</option>
-                <option value="submission-before-perfect">$:_("Number of submissions before 100%")</option>
-                <option value="submissions-stats">$:_("Statistics on submissions")</option>
+                <option value="submission-before-perfect">$:_("Distribution of the number of submissions before 100%")</option>
+                <option value="lines-per-submission">$:_("Distribution of the number of lines per submission")</option>
+                <option value="submissions-time">$:_("Submissions in function of time")</option>
+                <option value="tag-sorted">$:_("Submissions sorted per tags")</option>
             </select>
         </div>
     </div>

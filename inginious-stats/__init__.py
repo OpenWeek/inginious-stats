@@ -17,6 +17,13 @@ def add_admin_menu(course): # pylint: disable=unused-argument
 class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
     def _tasks_stats(self, courseid, tasks, daterange):
+        """
+        Get statistics about the task submissions of a courseid
+        :param: - courseid: id of an inginious course
+                - list of the tasks for courseid
+                - daterange period for the query
+        :return: list of dict containing the data per task per user
+        """
         stats_tasks = self.database.submissions.aggregate(
             [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
              {"$group": {"_id": "$taskid", "averageGrade": {"$avg": "$grade"},
@@ -35,12 +42,13 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "minGrade": x["minGrade"],
              "maxGrade": x["maxGrade"],
              "allGrades": x["allGrades"],
-             "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
+             "tags": [y for y in x["tags"]],
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
         ]
 
     def _task_failed_attempts(self, taskid, daterange):
+        """ Gives the number of failed attempts before first success """
         task_data =  self.database.submissions.aggregate(
             [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "taskid": taskid}},
             {"$sort": {"submitted_on": 1}}
@@ -62,38 +70,40 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         return result
 
     def _tags_stats(self, courseid, tasks, daterange):
+        # TODO doc
         stats_tasks = self._tasks_stats(courseid, tasks, daterange)
         tag_stats = {}
         for x in stats_tasks:
             for tag in x["tags"]:
                 if tag not in tag_stats and tag != "":
-                    tag_stats[tag] = {  "submissions": x["submissions"], 
-                                        "validSubmissions": x["validSubmissions"],
-                                        "grade": [x["allGrades"]],
-                                        "minGrade":x["minGrade"],
-                                        "maxGrade":x["maxGrade"],
-                                        "averageGrade":x["averageGrade"]
-                                        }
+                    tag_stats[tag] = {"submissions": x["submissions"],
+                                      "validSubmissions": x["validSubmissions"],
+                                      "grade": [x["allGrades"]],
+                                      "minGrade": x["minGrade"],
+                                      "maxGrade": x["maxGrade"],
+                                      "averageGrade": x["averageGrade"]
+                                      }
                 elif tag != "":
                     tag_stats[tag]["submissions"] += x["submissions"]
                     tag_stats[tag]["validSubmissions"] += x["validSubmissions"]
                     tag_stats[tag]["averageGrade"] = (tag_stats[tag]["averageGrade"]*len(tag_stats[tag]["grade"]) 
-                            + x["averageGrade"]*len(x["grade"])) / (len(tag_stats[tag]["grade"])+len(x["grade"]))
+                                                      + x["averageGrade"]*len(x["grade"])) / (len(tag_stats[tag]["grade"])+len(x["grade"]))
                     tag_stats[tag]["grade"].append(x["allGrades"])
                     tag_stats[tag]["minGrade"] = min(tag_stats[tag]["grade"])
                     tag_stats[tag]["minGrade"] = max(tag_stats[tag]["grade"])
         return tag_stats
 
     def _id_stats(self, courseid, tasks, daterange):
+        # TODO doc
         stats_tasks = self._tasks_stats(courseid, tasks, daterange)
 
         id_stats = {}
         for x in stats_tasks:
             for id_val in x["_id"]:
                 if id_val not in id_stats:
-                    id_stats[id_val] = {    "submissions":x["submissions"], 
-                                            "validSubmissions":x["validSubmissions"],
-                                            "grade": [x["grade"]]}
+                    id_stats[id_val] = {"submissions": x["submissions"],
+                                        "validSubmissions": x["validSubmissions"],
+                                        "grade": [x["grade"]]}
                 else:
                     id_stats[id_val]["submissions"] += x["submissions"]
                     id_stats[id_val]["validSubmissions"] += x["validSubmissions"]
@@ -101,6 +111,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         return id_stats
 
     def _users_stats(self, courseid, daterange):
+        # TODO doc
         stats_users = self.database.submissions.aggregate([
             {"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
             {"$project": {"username": "$username", "result": "$result"}},
@@ -118,6 +129,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         ]
 
     def _graph_stats(self, courseid, daterange):
+        # TODO improve
         project = {
             "year": {"$year": "$submitted_on"},
             "month": {"$month": "$submitted_on"},
@@ -169,6 +181,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         return (all_submissions, valid_submissions)
 
     def _get_distribution(self, courseid, tasks, daterange, exec_names, tag_names):
+        # TODO doc
         exec_list = exec_names.split(",")
         tag_list = tag_names.split(",")
         stats_tags = self._tags_stats(courseid, tasks, daterange)
@@ -186,8 +199,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             if task["name"].strip() in exec_list and add:
                 all_result.append(task)
         print(all_result)
-
-
+        return all_result  # TODO check correctness
 
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
@@ -220,10 +232,9 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         error = None
         daterange = [now - timedelta(days=14), now]
-        if(data.chart_type == "grades-distribution"):
+        if data.chart_type == "grades-distribution":
             data = self._get_distribution(courseid, tasks, daterange, data.filter_exercises, data.filter_tags)
 
-        # TODO this is copied from GET_AUTH
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, data)
 
@@ -239,6 +250,7 @@ def init(plugin_manager, course_factory, client, plugin_config):  # pylint: disa
 
 class StaticMockPage(object):
     # TODO: Replace by shared static middleware and let webserver serve the files
+
     def GET(self, path):
         if not os.path.abspath(PATH_TO_PLUGIN) in os.path.abspath(os.path.join(PATH_TO_PLUGIN, path)):
             raise web.notfound()

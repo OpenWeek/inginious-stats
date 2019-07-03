@@ -19,19 +19,63 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
     def _tasks_stats(self, courseid, tasks, daterange):
         stats_tasks = self.database.submissions.aggregate(
             [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
-             {"$project": {"taskid": "$taskid", "result": "$result"}},
+             {"$project": {"taskid": "$taskid", "result": "$result", "tests": "$tests"}},
              {"$group": {"_id": "$taskid", "submissions": {"$sum": 1}, "validSubmissions":
-                 {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}}}
+                 {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}},
+                         "tags": {"$first": "$tests"}}
               },
              {"$sort": {"submissions": -1}}])
 
         return [
-            {"name": tasks[x["_id"]].get_name(self.user_manager.session_language()) if x["_id"] in tasks else x["_id"],
+            {"_id": x["_id"],
+             "name": tasks[x["_id"]].get_name(self.user_manager.session_language()) if x["_id"] in tasks else x["_id"],
              "submissions": x["submissions"],
-             "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
+             "tags": [y for y in x["tags"]],
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
         ]
+
+    def _task_details(self, taskid, daterange):
+        task_data =  self.database.submissions.aggregate(
+            [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "taskid": taskid}},
+            {"$group": {"_id": "$taskid", "averageGrade": {"$avg": "$grade"},
+                         "minGrade": {"$min": "$grade"},"maxGrade": {"$max": "$grade"},
+                         "allGrades": {"$push": "$grade"},
+                         "submissions": {"$sum": 1}, "validSubmissions":
+                 {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}}}
+              }])
+
+        return [{
+             "submissions": x["submissions"],
+             "averageGrade" : x["averageGrade"],
+             "minGrade" : x["minGrade"],
+             "maxGrade" : x["maxGrade"],
+             "allGrades" : x["allGrades"],
+             "validSubmissions": x["validSubmissions"]
+                }
+            for x in task_data]
+
+    def _task_failed_attempts(self, taskid, daterange):
+        task_data =  self.database.submissions.aggregate(
+            [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "taskid": taskid}},
+            {"$sort": {"submitted_on": 1}}
+            ])
+
+        result = {}
+        for x in task_data:
+            if x["username"][0] not in result:
+                if x["result"] == "success":
+                    result[x["username"][0]] = {"tries":1, "done":True}
+                else:
+                    result[x["username"][0]] = {"tries":1, "done":False}
+            else:
+                if not result[x["username"][0]]["done"]:
+                    if x["result"] == "success":
+                        result[x["username"][0]]["done"] = True
+                    else:
+                        result[x["username"][0]]["tries"] +=1
+        return result
+
 
     def _tags_stats(self, courseid, tasks, daterange):
         stats_tasks = self._tasks_stats(courseid, tasks, daterange)
@@ -40,11 +84,30 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         for x in stats_tasks:
             for tag in x["tags"]:
                 if tag not in tag_stats and tag != "":
-                    tag_stats[tag] = {"submissions":x["submissions"], "validSubmissions":x["validSubmissions"]}
+                    tag_stats[tag] = {  "submissions": x["submissions"], 
+                                        "validSubmissions": x["validSubmissions"],
+                                        "grade": [x["grade"]]}
                 elif tag != "":
                     tag_stats[tag]["submissions"] += x["submissions"]
                     tag_stats[tag]["validSubmissions"] += x["validSubmissions"]
+                    tag_stats[tag]["grade"].append(x["grade"])
         return tag_stats
+
+    def _id_stats(self, courseid, tasks, daterange):
+        stats_tasks = self._tasks_stats(courseid, tasks, daterange)
+
+        id_stats = {}
+        for x in stats_tasks:
+            for id_val in x["_id"]:
+                if id_val not in id_stats:
+                    id_stats[id_val] = {    "submissions":x["submissions"], 
+                                            "validSubmissions":x["validSubmissions"],
+                                            "grade": [x["grade"]]}
+                else:
+                    id_stats[id_val]["submissions"] += x["submissions"]
+                    id_stats[id_val]["validSubmissions"] += x["validSubmissions"]
+                    id_stats[id_val]["grade"].append(x["grade"])
+        return id_stats
 
     def _users_stats(self, courseid, daterange):
         stats_users = self.database.submissions.aggregate([
@@ -117,16 +180,28 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
         course, __ = self.get_course_and_check_rights(courseid)
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course,None)
+        # TODO: Remove stats in get
+        tasks = course.get_tasks()
+        now = datetime.now().replace(minute=0, second=0, microsecond=0)
 
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, None)
+        error = None
+        if f == None and t == None:
+            daterange = [now - timedelta(days=14), now]
+        else:
+            try:
+                daterange = [datetime.strptime(x[0:16], "%Y-%m-%dT%H:%M") for x in (f, t)]
+            except:
+                error = "Invalid dates"
+                daterange = [now - timedelta(days=14), now]
+
+        stats_tasks = self._task_failed_attempts("s2_make", daterange)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course,stats_tasks)
 
     def POST_AUTH(self, courseid):
         """ POST Request"""
         print("=============>> POST was called (return the same thing as GET)")
         data = web.input(stats_from='', stats_to='', chart_type='', submissions_filter='', max_submission_grade='', min_submission_grade='', filter_tags='', filter_exercises='')
         print("DATA: " + str(data))
-        print(data["stats_to"])
 
         # TODO this is copied from GET_AUTH
         course, __ = self.get_course_and_check_rights(courseid)

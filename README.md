@@ -24,17 +24,19 @@ In your ``configuration.yaml`` file, add the following plugin entry:
 
 ## Intended features
 Filter per:
-- all submissions/best submissions
+- all submissions/best submissions/100% submissions
 - tags
 - exerciseId
 - student
 - ignore submissions with certain gradings
 
 Type of charts:
-- basic statistics (mean, variance, standard deviation, median,...)
 - plot distribution of grades for submissions
+    - basic statistics (mean, variance, standard deviation, median, mode...)
 - number of submission before 100%
+    - basic statistics (mean, variance, standard deviation, median, mode...)
 - number of lines / submission
+    - basic statistics (mean, variance, standard deviation, median, mode...)
 
 Feature:
 - export to CSV

@@ -169,8 +169,13 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         return (all_submissions, valid_submissions)
 
     def _get_distribution(self, courseid, tasks, daterange, exec_names, tag_names):
-        exec_list = exec_names.split(",")
-        tag_list = tag_names.split(",")
+        exec_list = [name.strip()
+                     for name in exec_names.split(",")
+                     if name.strip() != ""]
+        tag_list = [tag.strip()
+                    for tag in tag_names.split(",")
+                    if tag.strip() != ""]
+        print("TAGS: " + str(tag_list))
         stats_tags = self._tags_stats(courseid, tasks, daterange)
         print("(==========================)")
         print(stats_tags)
@@ -207,25 +212,25 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         stats_tasks = self._task_failed_attempts("s2_make", daterange)
 
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, None)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, None, None)
 
     def POST_AUTH(self, courseid):
         """ POST Request"""
         print("=============>> POST was called (return the same thing as GET)")
-        data = web.input(stats_from='', stats_to='', chart_type='', submissions_filter='', max_submission_grade='', min_submission_grade='', filter_tags='', filter_exercises='')
-        print("DATA: " + str(data))
+        chart_query = web.input(stats_from='', stats_to='', chart_type='', submissions_filter='', max_submission_grade='', min_submission_grade='', filter_tags='', filter_exercises='')
+        print("QUERY: " + str(chart_query))
         course, __ = self.get_course_and_check_rights(courseid)
         tasks = course.get_tasks()
         now = datetime.now().replace(minute=0, second=0, microsecond=0)
 
         error = None
         daterange = [now - timedelta(days=14), now]
-        if(data.chart_type == "grades-distribution"):
-            data = self._get_distribution(courseid, tasks, daterange, data.filter_exercises, data.filter_tags)
+        if chart_query.chart_type == "grades-distribution":
+            data = self._get_distribution(courseid, tasks, daterange, chart_query.filter_exercises, chart_query.filter_tags)
 
         # TODO this is copied from GET_AUTH
         course, __ = self.get_course_and_check_rights(courseid)
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, data)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, data)
 
 
 def init(plugin_manager, course_factory, client, plugin_config):  # pylint: disable=unused-argument

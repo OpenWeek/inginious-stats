@@ -50,7 +50,7 @@ $if chart_query is not None:
         console.log(data);
 
         /*
-        $if data is not None:
+        $if chart_query is not None:
         //*/
             {
                 var ctx = document.getElementById('canvas').getContext('2d');
@@ -84,9 +84,19 @@ $if chart_query is not None:
                     },
                     options: {
                         scales: {
+                            xAxes: [{
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Grade'
+                                }
+                            }],
                             yAxes: [{
                                 ticks: {
                                     beginAtZero: true
+                                },
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Number of submission'
                                 }
                             }]
                         }

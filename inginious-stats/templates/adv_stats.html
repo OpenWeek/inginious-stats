@@ -28,38 +28,38 @@ $if chart_query is not None:
     <h4>Filters</h4>
     <div class="form-row">
         <div class="form-group col-md-4">
-          <input type="radio" name="submissions_filter" id="submissions_filter_all" value="all" checked>All submissions</input> <br/>
-          <input type="radio" name="submissions_filter" id="submissions_filter_best" value="best">Best submission for each student</input> <br/>
+          <input type="radio" name="submissions_filter" id="submissions_filter_all" value="all" checked>$:_("All submissions")</input> <br/>
+          <input type="radio" name="submissions_filter" id="submissions_filter_best" value="best">$:_("Best submission for each student")</input> <br/>
         </div>
         <div class="form-group col-md-4">
-            <label for="min_submission_grade">$:_("Submissions graded from")</label>
-            <input name="min_submission_grade" type="text" class="form-control" id="min_submission_grade" placeholder="0%" value="0%">
+            <label for="min_submission_grade">$:_("Submissions graded from (in percent)")</label>
+            <input name="min_submission_grade" type="text" class="form-control" id="min_submission_grade" placeholder="0%" value="0%" pattern="((100)|([1-9]?[0-9])(\.[0-9]+)?)%?">
         </div>
         <div class="form-group col-md-4">
-            <label for="max_submission_grade">$:_("Submissions graded to")</label>
-            <input name="max_submission_grade" type="text" class="form-control" id="max_submission_grade" placeholder="100%" value="100%">
+            <label for="max_submission_grade">$:_("Submissions graded to (in percent)")</label>
+            <input name="max_submission_grade" type="text" class="form-control" id="max_submission_grade" placeholder="100%" value="100%" pattern="((100)|([1-9]?[0-9])(\.[0-9]+)?)%?">
         </div>
     </div>
     <div class="form-row">
         <div class="form-group col-md-6">
             <label for="stats_from">$:_("Compute stats since")</label>
-            <input name="stats_from" type="text" class="form-control" id="stats_from" placeholder="From" value="">
+            <input name="stats_from" type="text" class="form-control" id="stats_from" placeholder="$:_("The beginning of the Unix epoch")" value="">
         </div>
         <div class="form-group col-md-6">
             <label for="stats_to">$:_("Until")</label>
-            <input  name="stats_to"type="text" class="form-control" id="stats_to" placeholder="To" value="">
+            <input  name="stats_to"type="text" class="form-control" id="stats_to" placeholder="$:_("Now")" value="">
         </div>
     </div>
     <div class="form-row">
         <div class="form-group col-md-12">
             <label for="filter_tags">$:_("Tags (separated by commas)")</label>
-            <input name="filter_tags" type="text" class="form-control" id="filter_tags" placeholder="None" value="">
+            <input name="filter_tags" type="text" class="form-control" id="filter_tags" placeholder="$:_("None")" value="">
         </div>
     </div>
     <div class="form-row">
         <div class="form-group col-md-12">
             <label for="filter_exercises">$:_("Exercise names (separated by commas)")</label>
-            <input name="filter_exercises" type="text" class="form-control" id="filter_exercises" placeholder="None" value="">
+            <input name="filter_exercises" type="text" class="form-control" id="filter_exercises" placeholder="$:_("None")" value="">
         </div>
     </div>
     <button class="btn btn-primary btn-block" type="submit"><i class="fa fa-download"></i>$:_("Update")</button>

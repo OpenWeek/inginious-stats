@@ -1,4 +1,5 @@
 function fillFilters(query) {
+    /* Sets all the filters with the value that was requested by the user. */
     if (query.chart_type) {
         $("#chart_type")[0].value = query.chart_type;
     }
@@ -24,7 +25,23 @@ function fillFilters(query) {
 }
 
 
-function makeChart() {
+const chartTypeCorrespondence = {
+    "grades-distribution": "bar",
+    "submission-before-perfect": "bar",
+    "lines-per-submission": "bar",
+    "submissions-time": "line",
+    "tag-sorted": "bar"
+}
+const chartTypeLabelCorrespondence = {
+    "grades-distribution": [...Array(21).keys()],
+    "submission-before-perfect": [...Array(31).keys()],
+    "lines-per-submission": [...Array(201).keys()],
+    "submissions-time": ["lundi", "mardi", "mercredi","TODO"],
+    "tag-sorted": ["Timeout", "Segfault", "Cannot compile", "Could compile"]
+}
+
+function makeChart(chartTypeStr) {
+    /* Creates the chart requested by the user and adds it to the page. */
     // Data placeholder
     const max = 100;
     data = []
@@ -35,9 +52,9 @@ function makeChart() {
 
     var ctx = document.getElementById('canvas').getContext('2d');
     var myChart = new Chart(ctx, {
-        type: 'bar',
+        type: chartTypeCorrespondence[chartTypeStr],
         data: {
-            labels: [...Array(21).keys()],
+            labels: chartTypeLabelCorrespondence[chartTypeStr],
             datasets: [{
                 label: 'Placeholder',
                 data: data,
@@ -76,7 +93,7 @@ function makeChart() {
                     },
                     scaleLabel: {
                         display: true,
-                        labelString: 'Number of submission'
+                        labelString: 'Number of submissions'
                     }
                 }]
             }
@@ -85,6 +102,7 @@ function makeChart() {
 }
 
 function addStatsTable() {
+    /* Creates and puts a table of statistics requested by the user on the page. */
     $("#table-count")[0].innerHTML = Math.floor(100 * Math.random());
     $("#table-min")[0].innerHTML = Math.floor(100 * Math.random());
     $("#table-max")[0].innerHTML = Math.floor(100 * Math.random());

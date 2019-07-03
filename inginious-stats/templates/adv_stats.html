@@ -116,17 +116,18 @@ $if chart_query is not None:
         $if chart_query is not None:
         //*/
           {
-            fillFilters(
-              {chart_type: "$chart_query.chart_type",
-               submissions_filter: "$chart_query.submissions_filter",
-               min_submission_grade: "$chart_query.min_submission_grade",
-               max_submission_grade: "$chart_query.max_submission_grade",
-               stats_from: "$chart_query.stats_from",
-               stats_to: "$chart_query.stats_to",
-               filter_tags: "$chart_query.filter_tags",
-               filter_exercises: "$chart_query.filter_exercises"}
-            );
-            makeChart();
+            let chartQuery = {
+              chart_type: "$chart_query.chart_type",
+              submissions_filter: "$chart_query.submissions_filter",
+              min_submission_grade: "$chart_query.min_submission_grade",
+              max_submission_grade: "$chart_query.max_submission_grade",
+              stats_from: "$chart_query.stats_from",
+              stats_to: "$chart_query.stats_to",
+              filter_tags: "$chart_query.filter_tags",
+              filter_exercises: "$chart_query.filter_exercises"
+            }
+            fillFilters(chartQuery);
+            makeChart(chartQuery.chart_type);
             addStatsTable();
           }
     };

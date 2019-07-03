@@ -124,7 +124,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
     def POST_AUTH(self, courseid):
         """ POST Request"""
         print("=============>> POST was called (return the same thing as GET)")
-        data = web.input(stats_from='', stats_to='')
+        data = web.input(stats_from='', stats_to='', chart_type='', submissions_filter='', max_submission_grade='', min_submission_grade='', filter_tags='', filter_exercises='')
         print("DATA: " + str(data))
         print(data["stats_to"])
 

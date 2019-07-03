@@ -35,7 +35,7 @@ function makeChart() {
 
     var ctx = document.getElementById('canvas').getContext('2d');
     var myChart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: [...Array(21).keys()],
             datasets: [{

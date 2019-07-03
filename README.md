@@ -33,12 +33,14 @@ Filter per:
 
 Type of charts:
 - plot distribution of grades for submissions
-    - basic statistics (mean, variance, standard deviation, median, mode...)
+    - basic statistics*
 - plot grades in function of the time
 - number of submission before 100%
-    - basic statistics (mean, variance, standard deviation, median, mode...)
+    - basic statistics
 - number of lines / submission
-    - basic statistics (mean, variance, standard deviation, median, mode...)
+    - basic statistics
+
+*(count, min, max, mean, median, mode, variance, standard deviation)
 
 Feature:
 - export to CSV

@@ -61,19 +61,91 @@ function makeChart(chartTypeStr) {
 }
 
 function makeGradeDistroChart(data) {
-    _displayChart("bar", [...Array(21).keys()], data);
+    const labels = _createConsecutiveLabels(0, 101, 20);
+    _displayChart("bar", labels, data);
 }
 function makeNbSubmissionsBfPerfectChart(data) {
-    _displayChart("bar", [...Array(31).keys()], data);
+    const min = 10; // TODO find min from data
+    const max = 31; // TODO find max from data // TODO max is not included
+    const processedData = _groupBars(data);
+    const labels = _createConsecutiveLabels(min, max);
+    _displayChart("bar", labels, data);
 }
 function makeLinePerSubmissionChart(data) {
-    _displayChart("bar", [...Array(201).keys()], data);
+    const min = 5; // TODO find min from data
+    const max = 201; // TODO find max from data // TODO max is not included
+    const processedData = _groupBars(data);
+    const labels = _createConsecutiveLabels(min, max);
+    _displayChart("bar", labels, data);
 }
 function makeSubmissionTimeGraph(data) {
     _displayChart("line", ["lundi", "mardi", "mercredi", "TODO"], data);
 }
 function makeTagSortedChart(data) {
     _displayChart("bar", ["Timeout", "Segfault", "Cannot compile", "Could compile"], data);
+}
+
+const maxNbBars = 200; // TODO tmp, change that number
+function _groupBars(dataGroups) {
+    /*
+     * Returns the data with less groups of data, to be able to display a readable bar chart.
+     * Currently consider each group to be a number.
+     */
+    if (dataGroups.length <= maxNbBars)
+        return dataGroups;
+
+    newGroups = [];
+    const nbGroupsPerNewGroup = Math.floor(dataGroups.length/maxNbBars);
+    let i = 0;
+    let acc = 0;
+    for (let currentGroup of dataGroups) {
+        acc += currentGroup;
+        i++;
+        if (i > nbGroupsPerNewGroup) {
+            i = 0;
+            newGroups.push(acc);
+            acc = 0;
+        }
+    }
+    if (i > 0)
+        newGroups[newGroups.length-1] += acc;
+    return newGroups;
+}
+function _createConsecutiveLabels(min, max, maxNbGroups=maxNbBars) {
+    /*
+     * Returns an array containing labels for each group in a bar plot.
+     * Data for the bar plot is considered to be consecutive numbers,
+     * groups will thus be a range of consecutive numbers.
+     * `max` is not included.
+     */
+    const widthGroup = Math.floor((max - min)/maxNbGroups);
+
+    if (widthGroup == 0) {
+        let labels = [];
+        for (let i = min; i < max; i++) 
+            labels.push(i);
+        return labels;
+    }
+    if (widthGroup == 1) {
+        let labels = [];
+        for (let i = 0; i < maxNbBars; i++)
+            labels.push(min + i);
+        return labels;
+    }
+  
+    let labels = [];
+    for (let i = 0; i < maxNbGroups; i++) {
+        const current = min + i*widthGroup;
+        const currentEnd = current + widthGroup - 1;
+        labels.push(current + " to " + currentEnd);
+    }
+
+    if (!labels[labels.length-1].endsWith(max-1)) {
+        let lastLabel = labels[labels.length-1];
+        let words = lastLabel.split(" ");
+        labels[labels.length-1] = words[0] + " " + words[1] + " " + (max-1);
+    }
+    return labels;
 }
 
 function _displayChart(type, labels, data) {

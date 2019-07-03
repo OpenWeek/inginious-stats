@@ -1,3 +1,4 @@
+/* JS for template */
 function fillFilters(query) {
     /* Sets all the filters with the value that was requested by the user. */
     if (query.chart_type) {
@@ -69,7 +70,7 @@ function makeLinePerSubmissionChart(data) {
     _displayChart("bar", [...Array(201).keys()], data);
 }
 function makeSubmissionTimeGraph(data) {
-    _displayChart("bar", ["lundi", "mardi", "mercredi", "TODO"], data);
+    _displayChart("line", ["lundi", "mardi", "mercredi", "TODO"], data);
 }
 function makeTagSortedChart(data) {
     _displayChart("bar", ["Timeout", "Segfault", "Cannot compile", "Could compile"], data);

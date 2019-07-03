@@ -67,6 +67,46 @@ $if chart_query is not None:
 
 <h3>$:_("Results")</h3>
 <canvas id="canvas"></canvas>
+<div hidden id="stats-table" style="margin: auto; padding: 1.5rem;">
+    <table>
+        <tr>
+            <th>$:_("Variable")</th>
+            <th>$:_("Value")</th>
+        </tr>
+        <tr>
+          <td>$:_("Count")</td>
+          <td id="table-count"></td>
+        </tr>
+        <tr>
+          <td>$:_("Minimum")</td>
+          <td id="table-min"></td>
+        </tr>
+        <tr>
+          <td>$:_("Maximum")</td>
+          <td id="table-max"></td>
+        </tr>
+        <tr>
+          <td>$:_("Mean")</td>
+          <td id="table-mean"></td>
+        </tr>
+        <tr>
+          <td>$:_("Median")</td>
+          <td id="table-median"></td>
+        </tr>
+        <tr>
+          <td>$:_("Mode")</td>
+          <td id="table-mode"></td>
+        </tr>
+        <tr>
+          <td>$:_("Variance")</td>
+          <td id="table-variance"></td>
+        </tr>
+        <tr>
+          <td>$:_("Standard deviation")</td>
+          <td id="table-std-deviation"></td>
+        </tr>
+    </table>
+</div>
 
 <script>
     // Placeholders for a chart
@@ -86,6 +126,7 @@ $if chart_query is not None:
                filter_exercises: "$chart_query.filter_exercises"}
             );
             makeChart();
+            addStatsTable();
           }
     };
 </script>

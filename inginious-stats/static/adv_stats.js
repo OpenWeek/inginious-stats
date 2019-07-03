@@ -84,3 +84,16 @@ function makeChart() {
     });
 }
 
+function addStatsTable() {
+    $("#stats-table")[0].hidden = false;
+
+    $("#table-count")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-min")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-max")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-mean")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-median")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-mode")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-variance")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-std-deviation")[0].innerHTML = Math.floor(100 * Math.random());
+}
+

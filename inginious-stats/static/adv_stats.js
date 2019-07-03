@@ -35,7 +35,7 @@ function makeChart() {
 
     var ctx = document.getElementById('canvas').getContext('2d');
     var myChart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: [...Array(21).keys()],
             datasets: [{
@@ -82,5 +82,16 @@ function makeChart() {
             }
         }
     });
+}
+
+function addStatsTable() {
+    $("#table-count")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-min")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-max")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-mean")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-median")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-mode")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-variance")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-std-deviation")[0].innerHTML = Math.floor(100 * Math.random());
 }
 

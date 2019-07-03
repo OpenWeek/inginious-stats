@@ -34,11 +34,12 @@ Filter per:
 Type of charts:
 - plot distribution of grades for submissions
     - basic statistics*
-- plot grades in function of the time
 - number of submission before 100%
-    - basic statistics
+    - basic statistics*
 - number of lines / submission
-    - basic statistics
+    - basic statistics*
+- plot grades in function of the time
+- plot of the number of submissions with tags "timeout", "cannot compile", "segfault", "compiled"
 
 *(count, min, max, mean, median, mode, variance, standard deviation)
 

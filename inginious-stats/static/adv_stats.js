@@ -85,8 +85,6 @@ function makeChart() {
 }
 
 function addStatsTable() {
-    $("#stats-table")[0].hidden = false;
-
     $("#table-count")[0].innerHTML = Math.floor(100 * Math.random());
     $("#table-min")[0].innerHTML = Math.floor(100 * Math.random());
     $("#table-max")[0].innerHTML = Math.floor(100 * Math.random());

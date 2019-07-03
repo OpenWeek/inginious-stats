@@ -76,7 +76,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                         result[x["username"][0]]["tries"] +=1
         return result
 
-
     def _tags_stats(self, courseid, tasks, daterange):
         stats_tasks = self._tasks_stats(courseid, tasks, daterange)
 

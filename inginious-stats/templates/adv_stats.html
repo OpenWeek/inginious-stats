@@ -10,9 +10,7 @@ $var header:
 
 $var Column: $:template_helper.call('course_admin_menu',course=course,current='adv_stats')
 
-$if chart_query is not None:
-	<h1>Got: $chart_query</h1>
-
+<h1>Got: $chart_query</h1>
 <h2>$:_("Advanced statistics")</h2>
 <h3>$:_("Configuration")</h3>
 <form method="post" id="stats_form" action="$get_homepath()/admin/${course.get_id()}/adv_stats">
@@ -67,48 +65,49 @@ $if chart_query is not None:
     <button class="btn btn-primary btn-block" type="submit"><i class="fa fa-download"></i>$:_("Update")</button>
 </form>
 
-<h3>$:_("Results")</h3>
-<canvas id="canvas"></canvas>
-<div hidden id="stats-table" style="margin: auto; padding: 1.5rem;">
-    <table>
-        <tr>
-            <th>$:_("Variable")</th>
-            <th>$:_("Value")</th>
-        </tr>
-        <tr>
-          <td>$:_("Count")</td>
-          <td id="table-count"></td>
-        </tr>
-        <tr>
-          <td>$:_("Minimum")</td>
-          <td id="table-min"></td>
-        </tr>
-        <tr>
-          <td>$:_("Maximum")</td>
-          <td id="table-max"></td>
-        </tr>
-        <tr>
-          <td>$:_("Mean")</td>
-          <td id="table-mean"></td>
-        </tr>
-        <tr>
-          <td>$:_("Median")</td>
-          <td id="table-median"></td>
-        </tr>
-        <tr>
-          <td>$:_("Mode")</td>
-          <td id="table-mode"></td>
-        </tr>
-        <tr>
-          <td>$:_("Variance")</td>
-          <td id="table-variance"></td>
-        </tr>
-        <tr>
-          <td>$:_("Standard deviation")</td>
-          <td id="table-std-deviation"></td>
-        </tr>
-    </table>
-</div>
+$if chart_query is not None:
+    <h3>$:_("Results")</h3>
+    <canvas id="canvas"></canvas>
+    <div id="stats-table" style="margin: auto; padding: 1.5rem;">
+        <table>
+            <tr>
+                <th>$:_("Variable")</th>
+                <th>$:_("Value")</th>
+            </tr>
+            <tr>
+              <td>$:_("Count")</td>
+              <td id="table-count"></td>
+            </tr>
+            <tr>
+              <td>$:_("Minimum")</td>
+              <td id="table-min"></td>
+            </tr>
+            <tr>
+              <td>$:_("Maximum")</td>
+              <td id="table-max"></td>
+            </tr>
+            <tr>
+              <td>$:_("Mean")</td>
+              <td id="table-mean"></td>
+            </tr>
+            <tr>
+              <td>$:_("Median")</td>
+              <td id="table-median"></td>
+            </tr>
+            <tr>
+              <td>$:_("Mode")</td>
+              <td id="table-mode"></td>
+            </tr>
+            <tr>
+              <td>$:_("Variance")</td>
+              <td id="table-variance"></td>
+            </tr>
+            <tr>
+              <td>$:_("Standard deviation")</td>
+              <td id="table-std-deviation"></td>
+            </tr>
+        </table>
+    </div>
 
 <script>
     // Placeholders for a chart

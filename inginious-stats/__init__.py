@@ -19,16 +19,17 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
     def _tasks_stats(self, courseid, tasks, daterange):
         stats_tasks = self.database.submissions.aggregate(
             [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
-             {"$project": {"taskid": "$taskid", "result": "$result"}},
+             {"$project": {"taskid": "$taskid", "result": "$result", "tests": "$tests"}},
              {"$group": {"_id": "$taskid", "submissions": {"$sum": 1}, "validSubmissions":
-                 {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}}}
+                 {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}},
+                         "tags": {"$first": "$tests"}}
               },
              {"$sort": {"submissions": -1}}])
 
         return [
             {"name": tasks[x["_id"]].get_name(self.user_manager.session_language()) if x["_id"] in tasks else x["_id"],
              "submissions": x["submissions"],
-             "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
+             "tags": [y for y in x["tags"]],
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
         ]
@@ -119,14 +120,10 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course,None)
 
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, None)
-
     def POST_AUTH(self, courseid):
         """ POST Request"""
         print("=============>> POST was called (return the same thing as GET)")
         data = web.input(stats_from='', stats_to='')
-        print("DATA: " + str(data))
-        print(data["stats_to"])
 
         # TODO this is copied from GET_AUTH
         course, __ = self.get_course_and_check_rights(courseid)

@@ -175,7 +175,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         tag_list = [tag.strip()
                     for tag in tag_names.split(",")
                     if tag.strip() != ""]
-        print("TAGS: " + str(tag_list))
         stats_tags = self._tags_stats(courseid, tasks, daterange)
         print("(==========================)")
         print(stats_tags)
@@ -183,6 +182,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         for tag in tag_list:
             all_result.append(stats_tags[tag])
         stats_exec = self._tasks_stats(courseid, tasks, daterange)
+        print(stats_exec)
         for task in stats_exec:
             add = True
             for tag in tag_list:
@@ -215,7 +215,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, None, None)
 
     def POST_AUTH(self, courseid):
-        """ POST Request"""
+        """POST Request"""
         print("=============>> POST was called (return the same thing as GET)")
         chart_query = web.input(stats_from='', stats_to='', chart_type='', submissions_filter='', max_submission_grade='', min_submission_grade='', filter_tags='', filter_exercises='')
         print("QUERY: " + str(chart_query))
@@ -227,6 +227,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         daterange = [now - timedelta(days=14), now]
         if chart_query.chart_type == "grades-distribution":
             data = self._get_distribution(courseid, tasks, daterange, chart_query.filter_exercises, chart_query.filter_tags)
+        print("AAAAAAAAAAAAAAAAAAAAa")
+        print(data)
 
         # TODO this is copied from GET_AUTH
         course, __ = self.get_course_and_check_rights(courseid)

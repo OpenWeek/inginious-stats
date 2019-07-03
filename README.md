@@ -32,6 +32,7 @@ Filter per:
 
 Type of charts:
 - basic statistics (mean, variance, standard deviation, median,...)
+- plot distribution of grades for submissions
 - number of submission before 100%
 - number of lines / submission
 

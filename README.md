@@ -29,10 +29,12 @@ Filter per:
 - exerciseId
 - student
 - ignore submissions with certain gradings
+- date
 
 Type of charts:
 - plot distribution of grades for submissions
     - basic statistics (mean, variance, standard deviation, median, mode...)
+- plot grades in function of the time
 - number of submission before 100%
     - basic statistics (mean, variance, standard deviation, median, mode...)
 - number of lines / submission

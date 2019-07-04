@@ -83,6 +83,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "maxGrade": x["maxGrade"],
              "allGrades": x["allGrades"],
              "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
+             # or tags: [y for y in x["tags"]]
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
 ]

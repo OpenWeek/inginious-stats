@@ -80,9 +80,10 @@ function makeChart(chartQuery, dataPoints) {
 function makeGradeDistroChart(query, rawData) {
     // TODO This doesn't work for non integer numbers in `rawData`
     const nbBars = 20;
-    const data = _computeBarSizes(
-        rawData, nbBars, query.min_submission_grade, query.max_submission_grade);
-    const labels = _createConsecutiveLabels(0, 101, nbBars);
+    const bars = _computeBarSizes(
+        rawData, nbBars, parseFloat(query.min_submission_grade), parseFloat(query.max_submission_grade));
+    const data = bars["bars"];
+    const labels = bars["labels"];
     _displayChart("bar", labels, data);
 }
 function makeNbSubmissionsBfPerfectChart(query, data) {
@@ -113,18 +114,35 @@ function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
     if (max === undefined)
         max = Math.max.apply(null, rawData);
     console.log("min: " + min + " max: " + max);
-    const valuePerBucket = Math.max(1, Math.floor((max - min) / nbBuckets));
+    const valuesPerBucket = Math.max(1, Math.floor((max - min) / nbBuckets));
 
-    if (max - min >= valuePerBucket*nbBuckets)
+    if (nbBuckets > max - min)
+        nbBuckets = max - min;
+    while (max - min >= valuesPerBucket*nbBuckets)
         nbBuckets += 1;
 
     let result = new Array(nbBuckets).fill(0);
 
     for (let pt of rawData)
-        result[Math.floor((pt - min) / valuePerBucket)] += 1;
+        result[Math.floor((pt - min) / valuesPerBucket)] += 1;
     
-    console.log("result: " + result);
-    return result;
+    console.log("result: " + result + " length: " + result.length);
+
+    let labels = [];
+    for (let i = 0; i < nbBuckets-1; i++) {
+        console.log("min: " + min + " vbp: " + valuesPerBucket);
+        console.log("min: " + typeof(min));
+        const startBucket = min + i*valuesPerBucket;
+        const endBucket = min + (i+1)*valuesPerBucket;
+        labels.push(startBucket + " to " + endBucket);
+    }
+    const startLastBucket = min + (nbBuckets-1)*valuesPerBucket;
+    if (startLastBucket == max)
+        labels.push(max);
+    else
+        labels.push(startLastBucket + " to " + max);
+
+    return {"bars": result, "labels": labels};
 }
 
 const maxNbBars = 200; // TODO tmp, change that number

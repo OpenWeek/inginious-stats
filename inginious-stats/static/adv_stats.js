@@ -26,16 +26,28 @@ function fillFilters(query) {
 }
 
 //=========== Table ==================
-function addStatsTable() {
+function addStatsTable(stats) {
+    if (!stats) {
+        let stats = {
+            count: Math.floor(100 * Math.random()),
+            min: Math.floor(100 * Math.random()),
+            max: Math.floor(100 * Math.random()),
+            mean: Math.floor(100 * Math.random()),
+            median: Math.floor(100 * Math.random()),
+            mode: Math.floor(100 * Math.random()),
+            variance: Math.floor(100 * Math.random()),
+            std_deviation: Math.floor(100 * Math.random())
+        };
+    }
     /* Creates and puts a table of statistics requested by the user on the page. */
-    $("#table-count")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-min")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-max")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-mean")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-median")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-mode")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-variance")[0].innerHTML = Math.floor(100 * Math.random());
-    $("#table-std-deviation")[0].innerHTML = Math.floor(100 * Math.random());
+    $("#table-count")[0].innerHTML = stats.count;
+    $("#table-min")[0].innerHTML = stats.min;
+    $("#table-max")[0].innerHTML = stats.max;
+    $("#table-mean")[0].innerHTML = stats.mean;
+    $("#table-median")[0].innerHTML = stats.median;
+    $("#table-mode")[0].innerHTML = stats.mode;
+    $("#table-variance")[0].innerHTML = stats.variance;
+    $("#table-std-deviation")[0].innerHTML = stats.std_deviation;
 }
 
 //============== Charts ====================
@@ -57,10 +69,15 @@ function makeChart(chartTypeStr, dataPoints) {
         data[i] = tmp;
     }
 
-    chartTypeCorrespondence[chartTypeStr](data);
+    // if (chartTypeStr == "grades-distribution" && dataPoints)
+    //     chartTypeCorrespondence[chartTypeStr](dataPoints);
+    // else
+        chartTypeCorrespondence[chartTypeStr](data);
 }
 
-function makeGradeDistroChart(data) {
+function makeGradeDistroChart(rawData) {
+    // const data = _computeBarSizes(rawData);
+    let data = rawData;
     const labels = _createConsecutiveLabels(0, 101, 20);
     _displayChart("bar", labels, data);
 }
@@ -88,12 +105,24 @@ function makeTagSortedChart(data) {
 function _computeBarSizes(rawData) {
     barsDict = {};
     for (let pt of rawData) {
-        if !(pt in barsDict)
+        if (!(pt in barsDict))
             barsDict[pt] = 1;
         else
             barsDict[pt]++;
     }
-    return barsDict;
+
+    const groups = Object.keys(barsDict).sort();
+    const max = groups[groups.length - 1];
+    
+    let barData = [];
+    for (let i=0; i <= max; i++) {
+        if (i in barsDict)
+            barData.push(barsDict[i]);
+        else
+            barData.push(0);
+    }
+
+    return barData;
 }
 
 const maxNbBars = 200; // TODO tmp, change that number

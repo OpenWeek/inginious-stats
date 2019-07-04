@@ -10,7 +10,7 @@ $var header:
 
 $var Column: $:template_helper.call('course_admin_menu',course=course,current='adv_stats')
 
-<h1>Got: $chart_query</h1>
+<h1>Got: $data</h1>
 <h2>$:_("Advanced statistics")</h2>
 <h3>$:_("Configuration")</h3>
 <form method="post" id="stats_form" action="$get_homepath()/admin/${course.get_id()}/adv_stats">
@@ -114,9 +114,9 @@ $if chart_query is not None:
     window.onload = function() {
         /*
         $if chart_query is not None:
-        //*/
+        */
           {
-            let chartQuery = {
+            const chartQuery = {
               chart_type: "$chart_query.chart_type",
               submissions_filter: "$chart_query.submissions_filter",
               min_submission_grade: "$chart_query.min_submission_grade",
@@ -125,10 +125,23 @@ $if chart_query is not None:
               stats_to: "$chart_query.stats_to",
               filter_tags: "$chart_query.filter_tags",
               filter_exercises: "$chart_query.filter_exercises"
-            }
+            };
+            let stats = {
+              count: $data["count"],
+              min: $data["min"],
+              max: $data["max"],
+              mean: $data["mean"],
+              median: $data["median"],
+              mode: $data["mode"],
+              variance: $data["variance"],
+              std_deviation: $data["std_deviation"]
+            };
+            const data = $data["all_grades"];
+
             fillFilters(chartQuery);
-            makeChart(chartQuery.chart_type, data);
-            addStatsTable();
+
+            makeChart(chartQuery.chart_type, data, stats);
+            addStatsTable(stats);
           }
     };
 </script>

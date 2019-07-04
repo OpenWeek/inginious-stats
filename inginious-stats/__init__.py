@@ -83,7 +83,7 @@ def compute_advanced_stats(data):
         - median
         - mode
         - variance
-        - standard deviation (key "std-deviation")
+        - standard deviation (key "std_deviation")
     """
     count = len(data)
     if count == 0:
@@ -95,7 +95,7 @@ def compute_advanced_stats(data):
             "median": 0,
             "mode": 0,
             "variance": 0,
-            "std-deviation": 0
+            "std_deviation": 0
         }
 
     minimum = np.amin(data)
@@ -114,7 +114,7 @@ def compute_advanced_stats(data):
         "median": median,
         "mode": mode,
         "variance": variance,
-        "std-deviation": std_deviation
+        "std_deviation": std_deviation
     }
 
 
@@ -344,7 +344,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             print(data)
             all_grades = aggregate_all_grades(data)
             statistics = compute_advanced_stats(all_grades)
-            statistics["all-grades"] = all_grades
+            statistics["all_grades"] = all_grades
 
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)

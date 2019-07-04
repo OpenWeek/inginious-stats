@@ -104,16 +104,7 @@ def compute_advanced_stats(data):
     """
     count = len(data)
     if count == 0:
-        return {
-            "count": 0,
-            "min": 0,
-            "max": 0,
-            "mean": 0,
-            "median": 0,
-            "mode": 0,
-            "variance": 0,
-            "std_deviation": 0
-        }
+        return None
 
     minimum = np.amin(data)
     maximum = np.amax(data)
@@ -398,7 +389,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                     print("FILTERED "*3)
                     print(all_grades)
                     statistics = compute_advanced_stats(all_grades)
-                    statistics["all_grades"] = all_grades
+                    if statistics is not None:
+                        statistics["all_grades"] = all_grades
             else:
                 data = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
 

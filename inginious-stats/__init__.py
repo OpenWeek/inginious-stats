@@ -3,6 +3,7 @@ import web
 from urllib.parse import parse_qs
 import numpy as np
 from scipy import stats  # NOTE sometimes triggers a warning
+from dateutil.parser import parse as date_parse
 
 from inginious.frontend.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.tags import Tag
@@ -24,16 +25,17 @@ def parse_query(query):
     """
     # Date range
     if query.stats_to is not None and query.stats_to != "":
-        start_time = datetime.strptime(query.stats_to, "%Y-%m-%dT%H:%M")
+        start_time = date_parse(query.stats_to)
     else:
         start_time = datetime.min
 
     if query.stats_from is not None and query.stats_from != "":
-        end_time = datetime.strptime(query.stats_from, "%Y-%m-%dT%H:%M")
+        end_time = date_parse(query.stats_from)
     else:
         end_time = datetime.now().replace(minute=0, second=0, microsecond=0)
 
     date_range = [start_time, end_time]
+    print(date_range)
 
     # Exercises filter
     exercise_list = [name.strip()

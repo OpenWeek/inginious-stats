@@ -137,7 +137,6 @@ function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
 
     for (let pt of rawData)
         result[Math.floor((pt - min) / valuesPerBucket)] += 1;
-    console.log(result);
     
 
     let labels = [];

@@ -69,17 +69,18 @@ function makeChart(chartTypeStr, dataPoints) {
         data[i] = tmp;
     }
 
-    // if (chartTypeStr == "grades-distribution" && dataPoints)
-    //     chartTypeCorrespondence[chartTypeStr](dataPoints);
-    // else
+    if (chartTypeStr == "grades-distribution" && dataPoints)
+        chartTypeCorrespondence[chartTypeStr](dataPoints);
+    else
         chartTypeCorrespondence[chartTypeStr](data);
 }
 
 function makeGradeDistroChart(rawData) {
-    // const data = _computeBarSizes(rawData);
-    let data = rawData;
+    // TODO This doesn't work for non integer numbers in `rawData`
+    const data = _computeBarSizes(rawData);
+    const processedData = _groupBars(data);
     const labels = _createConsecutiveLabels(0, 101, 20);
-    _displayChart("bar", labels, data);
+    _displayChart("bar", labels, processedData);
 }
 function makeNbSubmissionsBfPerfectChart(data) {
     const min = 10; // TODO find min from data
@@ -101,6 +102,7 @@ function makeSubmissionTimeGraph(data) {
 function makeTagSortedChart(data) {
     _displayChart("bar", ["Timeout", "Segfault", "Cannot compile", "Could compile"], data);
 }
+
 
 function _computeBarSizes(rawData) {
     barsDict = {};
@@ -148,7 +150,7 @@ function _groupBars(dataGroups) {
         }
     }
     if (i > 0)
-        newGroups[newGroups.length-1] += acc;
+        newGroups.push(acc);
     return newGroups;
 }
 function _createConsecutiveLabels(min, max, maxNbGroups=maxNbBars) {
@@ -182,8 +184,8 @@ function _createConsecutiveLabels(min, max, maxNbGroups=maxNbBars) {
 
     if (!labels[labels.length-1].endsWith(max-1)) {
         let lastLabel = labels[labels.length-1];
-        let words = lastLabel.split(" ");
-        labels[labels.length-1] = words[0] + " " + words[1] + " " + (max-1);
+        let lastNb = lastLabel.split(" ")[2];
+        labels.push((lastNb+1) + " to " + (max-1));
     }
     return labels;
 }

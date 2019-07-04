@@ -79,7 +79,7 @@ function makeGradeDistroChart(rawData) {
     // TODO This doesn't work for non integer numbers in `rawData`
     const data = _computeBarSizes(rawData);
     const processedData = _groupBars(data);
-    const labels = _createConsecutiveLabels(0, 101, 20);
+    const labels = _createConsecutiveLabels(0, 101/*, 20*/);
     _displayChart("bar", labels, processedData);
 }
 function makeNbSubmissionsBfPerfectChart(data) {

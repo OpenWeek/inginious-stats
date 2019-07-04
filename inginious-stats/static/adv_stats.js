@@ -82,9 +82,13 @@ function makeGradeDistroChart(query, rawData) {
     const nbBars = 20;
     const bars = _computeBarSizes(
         rawData, nbBars, parseFloat(query.min_submission_grade), parseFloat(query.max_submission_grade));
-    const data = bars["bars"];
-    const labels = bars["labels"];
-    _displayChart("bar", labels, data);
+    if (bars) {
+        const data = bars["bars"];
+        const labels = bars["labels"];
+        _displayChart("bar", labels, data);
+    } else {
+        _showEmptyChart();
+    }
 }
 function makeNbSubmissionsBfPerfectChart(query, data) {
     const min = 10; // TODO find min from data
@@ -113,11 +117,12 @@ function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
         min =  Math.min.apply(null, rawData);
     if (max === undefined)
         max = Math.max.apply(null, rawData);
-    console.log("min: " + min + " max: " + max);
     const valuesPerBucket = Math.max(1, Math.floor((max - min) / nbBuckets));
 
     if (nbBuckets > max - min)
         nbBuckets = max - min;
+    if (nbBuckets <= 0)
+        return null;
     while (max - min >= valuesPerBucket*nbBuckets)
         nbBuckets += 1;
 
@@ -126,12 +131,9 @@ function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
     for (let pt of rawData)
         result[Math.floor((pt - min) / valuesPerBucket)] += 1;
     
-    console.log("result: " + result + " length: " + result.length);
 
     let labels = [];
     for (let i = 0; i < nbBuckets-1; i++) {
-        console.log("min: " + min + " vbp: " + valuesPerBucket);
-        console.log("min: " + typeof(min));
         const startBucket = min + i*valuesPerBucket;
         const endBucket = min + (i+1)*valuesPerBucket;
         labels.push(startBucket + " to " + endBucket);
@@ -261,5 +263,13 @@ function _displayChart(type, labels, data) {
             }
         }
     });
+}
+
+function _showEmptyChart() {
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "red";
+    ctx.fillText("Nothing to display. lol", 10, 50);
 }
 

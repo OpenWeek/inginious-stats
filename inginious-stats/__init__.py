@@ -155,6 +155,30 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
 ]
+
+    def _get_best_submissions(self, courseid, tasks, daterange):
+        """
+            Gives a list of only the best submission for each studentourseid
+            :param: - courseid: id of an inginious course
+                - list of the tasks for courseid
+                - daterange period for the query
+            :return: list of dict containing all best submissions per user
+        """
+        all_submissions = self.database.submissions.aggregate(
+            [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
+             {"$unwind":"$username"},
+             {"$group": {"_id": "$_id", "grade": {"$first": "$grade"}, "task": {"$first": "$taskid"},
+                         "username": {"$first": "$username"}, "tags": {"$first": "$tests"}}
+              }])
+        temp_dict = {}
+        for sub in all_submissions:
+            if sub["username"] in temp_dict:
+                if sub["grade"] > temp_dict[sub["username"]]["grade"]:
+                    temp_dict["username"] = sub
+            else:
+                temp_dict[sub["username"]] = sub
+        return list(temp_dict.values())
+
     def _task_failed_attempts(self, taskid, daterange):
         """ 
             Gives the number of failed attempts before first success 
@@ -327,8 +351,12 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         return all_result[0]  # TODO check correctness
 
     def _get_best_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
-        # TODO doc
-        return []
+        best = self._get_best_submissions(courseid, tasks, daterange)
+        result = []
+        print(best)
+        for submission in best:
+            result.append(submission["grade"])
+        return result
 
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
@@ -373,10 +401,10 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 print(data)
                 # all_grades = aggregate_all_grades(data)
                 all_grades = data["allGrades"]
-                statistics = compute_advanced_stats(all_grades)
-                statistics["all_grades"] = all_grades
             else:
-                data = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
+                all_grades = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
+            statistics = compute_advanced_stats(all_grades)
+            statistics["all_grades"] = all_grades
 
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)

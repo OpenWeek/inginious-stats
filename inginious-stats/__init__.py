@@ -31,9 +31,6 @@ def parse_query(query):
     else:
         end_time = datetime.now().replace(minute=0, second=0, microsecond=0)
 
-    print("="*30)
-    print("DATE TIME " + str(type(start_time)))
-    print("DATE TIME " + str(type(end_time)))
     date_range = [start_time, end_time]
 
     # Exercises filter
@@ -45,7 +42,16 @@ def parse_query(query):
                 for tag in query.filter_tags.split(",")
                 if tag.strip() != ""]
 
-    return (date_range, exercise_list, tag_list)
+    # Min-max grades
+    min_grade = None
+    if query.min_submission_grade is None and query.min_submission_grade != "":
+        min_grade = query.min_submission_grade
+    max_grade = None
+    if query.max_submission_grade is None and query.max_submission_grade != "":
+        max_grade = query.max_submission_grade
+    grade_bounds = (min_grade, max_grade)
+
+    return (query.chart_type, date_range, exercise_list, tag_list, grade_bounds, query.submissions_filter)
 
 
 class AdvancedCourseStatisticClass(INGIniousAdminPage):
@@ -285,13 +291,14 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         chart_query = web.input(stats_from='', stats_to='', chart_type='', submissions_filter='', max_submission_grade='', min_submission_grade='', filter_tags='', filter_exercises='')
         print("QUERY: " + str(chart_query))
 
-        (daterange, exercises, tags) = parse_query(chart_query)
+        (chart_type, daterange, exercises, tags, grade_boounds, all_or_best_submissions) = parse_query(chart_query)
         now = datetime.now().replace(minute=0, second=0, microsecond=0)
 
         error = None
         data = None
-        if chart_query.chart_type == "grades-distribution":
-            if chart_query.submissions_filter == "all":
+
+        if chart_type == "grades-distribution":
+            if all_or_best_submissions == "all":
                 data = self._get_all_distribution(courseid, tasks, daterange, exercises, tags)
                 print("AAAAAAAAAAAAAAAAAAAAA")
                 print(data)

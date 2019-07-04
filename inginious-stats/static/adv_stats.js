@@ -27,16 +27,16 @@ function fillFilters(query) {
 
 //=========== Table ==================
 function addStatsTable(stats) {
-    if (!stats) {
-        let stats = {
-            count: Math.floor(100 * Math.random()),
-            min: Math.floor(100 * Math.random()),
-            max: Math.floor(100 * Math.random()),
-            mean: Math.floor(100 * Math.random()),
-            median: Math.floor(100 * Math.random()),
-            mode: Math.floor(100 * Math.random()),
-            variance: Math.floor(100 * Math.random()),
-            std_deviation: Math.floor(100 * Math.random())
+    if (stats === undefined) {
+        stats = {
+            count: "N/A",
+            min: "N/A",
+            max: "N/A",
+            mean: "N/A",
+            median: "N/A",
+            mode: "N/A",
+            variance: "N/A",
+            std_deviation: "N/A"
         };
     }
     /* Creates and puts a table of statistics requested by the user on the page. */
@@ -61,8 +61,9 @@ const chartTypeCorrespondence = {
 
 function makeChart(chartQuery, dataPoints) {
     /* Creates the chart requested by the user and adds it to the page. */
-    if (!dataPoints)
+    if (dataPoints === undefined)
         _showEmptyChart();
+        return;
 
     console.log("Got " + dataPoints + " => " + (dataPoints === undefined));
     const chartTypeStr = chartQuery.chart_type;

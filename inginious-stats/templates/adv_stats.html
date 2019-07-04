@@ -127,10 +127,10 @@ $if chart_query is not None:
               filter_exercises: "$chart_query.filter_exercises"
             };
             let stats = undefined;
+            let data = undefined;
             /*
             $if data is not None:
             */
-              {
                 stats = {
                   count: $data["count"],
                   min: $data["min"],
@@ -141,14 +141,13 @@ $if chart_query is not None:
                   variance: $data["variance"],
                   std_deviation: $data["std_deviation"]
                 };
-              }
+                data = $data["all_grades"];
+          //*/
 
-            const data = $data["all_grades"];
+          fillFilters(chartQuery);
 
-            fillFilters(chartQuery);
-
-            makeChart(chartQuery, data, stats);
-            addStatsTable(stats);
+          makeChart(chartQuery, data, stats);
+          addStatsTable(stats);
           }
     };
 </script>

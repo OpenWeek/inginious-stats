@@ -68,7 +68,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
              {"$group": {"_id": "$taskid", "averageGrade": {"$avg": "$grade"},
                          "minGrade": {"$min": "$grade"},"maxGrade": {"$max": "$grade"},
-                         "allGrades": {"$push": "$grade"},
+                         "allGrades": {"$push": "$grade"}, "username": {"$first", "$username"},
                          "submissions": {"$sum": 1}, "validSubmissions":
                  {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}},
                          "tags": {"$first": "$tests"}}

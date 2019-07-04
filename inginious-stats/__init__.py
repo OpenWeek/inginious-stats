@@ -1,6 +1,8 @@
 import os
 import web
 from urllib.parse import parse_qs
+import numpy as np
+from scipy import stats  # NOTE sometimes triggers a warning
 
 from inginious.frontend.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.tags import Tag
@@ -53,6 +55,53 @@ def parse_query(query):
 
     return (query.chart_type, date_range, exercise_list, tag_list, grade_bounds, query.submissions_filter)
 
+
+def compute_advanced_stats(data):
+    """
+    Given a list of (numeric) data points `data`,
+    computes advanced statistics on them.
+    Returns a dict containing each stat.
+    The stats computed are:
+        - count
+        - min
+        - max
+        - mean
+        - median
+        - mode
+        - variance
+        - standard deviation (key "std-deviation")
+    """
+    count = len(data)
+    if count == 0:
+        return {
+            "count": 0,
+            "min": 0,
+            "max": 0,
+            "mean": 0,
+            "median": 0,
+            "mode": 0,
+            "variance": 0,
+            "std-deviation": 0
+        }
+
+    minimum = np.amin(data)
+    maximum = np.amax(data)
+    mean = np.mean(data)
+    median = np.median(data)
+    mode = stats.mode(data).mode[0]
+    variance = np.var(data)
+    std_deviation = np.sqrt(variance)
+
+    return {
+        "count": count,
+        "min": minimum,
+        "max": maximum,
+        "mean": mean,
+        "median": median,
+        "mode": mode,
+        "variance": variance,
+        "std-deviation": std_deviation
+    }
 
 class AdvancedCourseStatisticClass(INGIniousAdminPage):
 

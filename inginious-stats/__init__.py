@@ -132,7 +132,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
              {"$group": {"_id": "$taskid", "averageGrade": {"$avg": "$grade"},
                          "minGrade": {"$min": "$grade"},"maxGrade": {"$max": "$grade"},
-                         "allGrades": {"$push": "$grade"}, "username": {"$first", "$username"},
+                         "allGrades": {"$push": "$grade"},
                          "submissions": {"$sum": 1}, "validSubmissions":
                  {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}},
                          "tags": {"$first": "$tests"}}
@@ -146,8 +146,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "minGrade": x["minGrade"],
              "maxGrade": x["maxGrade"],
              "allGrades": x["allGrades"],
-             "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
-             # or tags: [y for y in x["tags"]]
+             #"tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
+             "tags": [y for y in x["tags"]],
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
 ]
@@ -367,7 +367,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 data = self._get_all_distribution(courseid, tasks, daterange, exercises, tags)
                 print("AAAAAAAAAAAAAAAAAAAAA")
                 print(data)
-                all_grades = aggregate_all_grades(data)
+                # all_grades = aggregate_all_grades(data)
+                all_grades = data["allGrades"]
                 statistics = compute_advanced_stats(all_grades)
                 statistics["all_grades"] = all_grades
             else:

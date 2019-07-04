@@ -6,10 +6,10 @@ function fillFilters(query) {
     }
     $("#submissions_filter_" + query.submissions_filter)[0].checked = true;
     if (query.min_submission_grade) {
-        $("#min_submission_grade")[0].value = query.min_submission_grade;
+        $("#min_submission_grade")[0].value = query.min_submission_grade + '%';
     }
     if (query.max_submission_grade) {
-        $("#max_submission_grade")[0].value = query.max_submission_grade;
+        $("#max_submission_grade")[0].value = query.max_submission_grade + '%';
     }
     if (query.stats_from) {
         $("#stats_from")[0].value = query.stats_from;
@@ -59,8 +59,10 @@ const chartTypeCorrespondence = {
     "tag-sorted": makeTagSortedChart
 }
 
-function makeChart(chartTypeStr, dataPoints) {
+function makeChart(chartQuery, dataPoints) {
     /* Creates the chart requested by the user and adds it to the page. */
+    const chartTypeStr = chartQuery.chart_type;
+
     // Data placeholder
     const max = 100;
     data = []
@@ -70,54 +72,58 @@ function makeChart(chartTypeStr, dataPoints) {
     }
 
     if (chartTypeStr == "grades-distribution" && dataPoints)
-        chartTypeCorrespondence[chartTypeStr](dataPoints);
+        chartTypeCorrespondence[chartTypeStr](chartQuery, dataPoints);
     else
-        chartTypeCorrespondence[chartTypeStr](data);
+        chartTypeCorrespondence[chartTypeStr](chartQuery, data);
 }
 
-function makeGradeDistroChart(rawData) {
+function makeGradeDistroChart(query, rawData) {
     // TODO This doesn't work for non integer numbers in `rawData`
     const nbBars = 20;
-    const data = _computeBarSizes(rawData, nbBars);
+    const data = _computeBarSizes(
+        rawData, nbBars, query.min_submission_grade, query.max_submission_grade);
     const labels = _createConsecutiveLabels(0, 101, nbBars);
     _displayChart("bar", labels, data);
 }
-function makeNbSubmissionsBfPerfectChart(data) {
+function makeNbSubmissionsBfPerfectChart(query, data) {
     const min = 10; // TODO find min from data
     const max = 31; // TODO find max from data // TODO max is not included
     const processedData = _groupBars(data);
     const labels = _createConsecutiveLabels(min, max);
     _displayChart("bar", labels, data);
 }
-function makeLinePerSubmissionChart(data) {
+function makeLinePerSubmissionChart(query, data) {
     const min = 5; // TODO find min from data
     const max = 201; // TODO find max from data // TODO max is not included
     const processedData = _groupBars(data);
     const labels = _createConsecutiveLabels(min, max);
     _displayChart("bar", labels, data);
 }
-function makeSubmissionTimeGraph(data) {
+function makeSubmissionTimeGraph(query, data) {
     _displayChart("line", ["lundi", "mardi", "mercredi", "TODO"], data);
 }
-function makeTagSortedChart(data) {
+function makeTagSortedChart(query, data) {
     _displayChart("bar", ["Timeout", "Segfault", "Cannot compile", "Could compile"], data);
 }
 
 
-function _computeBarSizes(rawData, nbBuckets) {
-    console.log("data: " + rawData + " buckets: " + nbBuckets);
-    const max = Math.max.apply(null, rawData);
-    const valuePerBucket = Math.max(1, Math.floor(max/nbBuckets));
+function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
+    if (min === undefined)
+        min =  Math.min.apply(null, rawData);
+    if (max === undefined)
+        max = Math.max.apply(null, rawData);
+    console.log("min: " + min + " max: " + max);
+    const valuePerBucket = Math.max(1, Math.floor((max - min) / nbBuckets));
 
-    if (max >= valuePerBucket*nbBuckets)
+    if (max - min >= valuePerBucket*nbBuckets)
         nbBuckets += 1;
 
     let result = new Array(nbBuckets).fill(0);
 
     for (let pt of rawData)
-        result[Math.floor(pt/valuePerBucket)] += 1;
+        result[Math.floor((pt - min) / valuePerBucket)] += 1;
     
-    console.log("Result: " + result);
+    console.log("result: " + result);
     return result;
 }
 

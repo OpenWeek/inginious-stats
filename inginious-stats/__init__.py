@@ -379,6 +379,9 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         (chart_type, daterange, exercises, tags, grade_bounds, all_or_best_submissions) = parse_query(chart_query)
         print("QUERY: " + str((chart_type, daterange, exercises, tags, grade_bounds, all_or_best_submissions)))
+        (minimum, maximum) = grade_bounds
+        chart_query.min_submission_grade = minimum
+        chart_query.max_submission_grade = maximum
 
         error = None
         data = None

@@ -14,6 +14,40 @@ def add_admin_menu(course): # pylint: disable=unused-argument
     return ('adv_stats', '<i class="fa fa-bar-chart fa-fw"></i>&nbsp; Advanced statistics')
 
 
+def parse_query(query):
+    """
+    Parses the query for a chart and returns the relevant parameters
+    that should be used to make the query on the database.
+    @return: a tuple with all the relevant query information
+    """
+    # Date range
+    if query.stats_to is not None and query.stats_to != "":
+        start_time = datetime.strptime(query.stats_to, "%Y-%m-%dT%H:%M")
+    else:
+        start_time = datetime.min
+
+    if query.stats_from is not None and query.stats_from != "":
+        end_time = datetime.strptime(query.stats_from, "%Y-%m-%dT%H:%M")
+    else:
+        end_time = datetime.now().replace(minute=0, second=0, microsecond=0)
+
+    print("="*30)
+    print("DATE TIME " + str(type(start_time)))
+    print("DATE TIME " + str(type(end_time)))
+    date_range = [start_time, end_time]
+
+    # Exercises filter
+    exercise_list = [name.strip()
+                     for name in query.filter_exercises.split(",")
+                     if name.strip() != ""]
+    # Tags filter
+    tag_list = [tag.strip()
+                for tag in query.filter_tags.split(",")
+                if tag.strip() != ""]
+
+    return (date_range, exercise_list, tag_list)
+
+
 class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
     def _tasks_stats(self, courseid, tasks, daterange):
@@ -45,8 +79,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "tags": [y for y in x["tags"]],
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
-        ]
-
+]
     def _task_failed_attempts(self, taskid, daterange):
         """ Gives the number of failed attempts before first success """
         task_data =  self.database.submissions.aggregate(
@@ -180,21 +213,16 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         valid_submissions = sorted(valid_submissions.items())
         return (all_submissions, valid_submissions)
 
-    def _get_distribution(self, courseid, tasks, daterange, exec_names, tag_names):
+    def _get_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
         # TODO doc
-        exec_list = [name.strip()
-                     for name in exec_names.split(",")
-                     if name.strip() != ""]
-        tag_list = [tag.strip()
-                    for tag in tag_names.split(",")
-                    if tag.strip() != ""]
         stats_tags = self._tags_stats(courseid, tasks, daterange)
-        print("(==========================)")
+        print("="*20 + "TAGS STATS" + "="*20)
         print(stats_tags)
         all_result = []
         for tag in tag_list:
             all_result.append(stats_tags[tag])
         stats_exec = self._tasks_stats(courseid, tasks, daterange)
+        print("="*20 + "EXERCISES STATS" + "="*20)
         print(stats_exec)
         for task in stats_exec:
             add = True
@@ -208,6 +236,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
+        # TODO no idea what f and t are
         course, __ = self.get_course_and_check_rights(courseid)
         tasks = course.get_tasks()
         now = datetime.now().replace(minute=0, second=0, microsecond=0)
@@ -228,18 +257,20 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
     def POST_AUTH(self, courseid):
         """POST Request"""
-        print("=============>> POST was called (return the same thing as GET)")
-        chart_query = web.input(stats_from='', stats_to='', chart_type='', submissions_filter='', max_submission_grade='', min_submission_grade='', filter_tags='', filter_exercises='')
-        print("QUERY: " + str(chart_query))
+        print("=============>> POST was called")
         course, __ = self.get_course_and_check_rights(courseid)
         tasks = course.get_tasks()
+
+        chart_query = web.input(stats_from='', stats_to='', chart_type='', submissions_filter='', max_submission_grade='', min_submission_grade='', filter_tags='', filter_exercises='')
+        print("QUERY: " + str(chart_query))
+
+        (daterange, exercises, tags) = parse_query(chart_query)
         now = datetime.now().replace(minute=0, second=0, microsecond=0)
 
         error = None
-        daterange = [now - timedelta(days=14), now]
         data = None
         if chart_query.chart_type == "grades-distribution":
-            data = self._get_distribution(courseid, tasks, daterange, chart_query.filter_exercises, chart_query.filter_tags)
+            data = self._get_distribution(courseid, tasks, daterange, exercises, tags)
             print("AAAAAAAAAAAAAAAAAAAAa")
             print(data)
 

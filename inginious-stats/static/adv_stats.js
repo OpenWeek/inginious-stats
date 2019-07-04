@@ -61,9 +61,10 @@ const chartTypeCorrespondence = {
 
 function makeChart(chartQuery, dataPoints) {
     /* Creates the chart requested by the user and adds it to the page. */
-    if (dataPoints === undefined)
+    if (dataPoints === undefined) {
         _showEmptyChart();
         return;
+    }
 
     console.log("Got " + dataPoints + " => " + (dataPoints === undefined));
     const chartTypeStr = chartQuery.chart_type;

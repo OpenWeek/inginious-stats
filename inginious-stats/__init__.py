@@ -56,6 +56,20 @@ def parse_query(query):
     return (query.chart_type, date_range, exercise_list, tag_list, grade_bounds, query.submissions_filter)
 
 
+def aggregate_all_grades(query_result):
+    """
+    Given a list of dicts where each dict represents an exercise and
+    contains a list of all the grades for this exercise,
+    aggregates the grades for all the exercises in just one list
+    and returns it.
+    """
+    answer = []
+    for exercise in query_result:
+        if "allGrades" in exercise:
+            answer.extend(exercise["allGrades"])
+    return answer
+
+
 def compute_advanced_stats(data):
     """
     Given a list of (numeric) data points `data`,
@@ -102,6 +116,7 @@ def compute_advanced_stats(data):
         "variance": variance,
         "std-deviation": std_deviation
     }
+
 
 class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
@@ -284,9 +299,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             for tag in tag_list:
                 if tag in task["tags"]:
                     add = False
-            if task["name"].strip() in exec_list and add:
+            if (len(exec_list) == 0 or task["name"].strip() in exec_list) and add:
                 all_result.append(task)
-        print(all_result)
         return all_result  # TODO check correctness
 
     def GET_AUTH(self, courseid, f=None, t=None):
@@ -328,9 +342,12 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             data = self._get_distribution(courseid, tasks, daterange, exercises, tags)
             print("AAAAAAAAAAAAAAAAAAAAa")
             print(data)
+            all_grades = aggregate_all_grades(data)
+            statistics = compute_advanced_stats(all_grades)
+            statistics["all-grades"] = all_grades
 
         course, __ = self.get_course_and_check_rights(courseid)
-        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, data)
+        return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)
 
 
 def init(plugin_manager, course_factory, client, plugin_config):  # pylint: disable=unused-argument

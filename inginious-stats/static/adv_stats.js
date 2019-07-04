@@ -47,7 +47,7 @@ const chartTypeCorrespondence = {
     "tag-sorted": makeTagSortedChart
 }
 
-function makeChart(chartTypeStr) {
+function makeChart(chartTypeStr, dataPoints) {
     /* Creates the chart requested by the user and adds it to the page. */
     // Data placeholder
     const max = 100;
@@ -83,6 +83,17 @@ function makeSubmissionTimeGraph(data) {
 }
 function makeTagSortedChart(data) {
     _displayChart("bar", ["Timeout", "Segfault", "Cannot compile", "Could compile"], data);
+}
+
+function _computeBarSizes(rawData) {
+    barsDict = {};
+    for (let pt of rawData) {
+        if !(pt in barsDict)
+            barsDict[pt] = 1;
+        else
+            barsDict[pt]++;
+    }
+    return barsDict;
 }
 
 const maxNbBars = 200; // TODO tmp, change that number

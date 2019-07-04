@@ -127,7 +127,7 @@ $if chart_query is not None:
               filter_exercises: "$chart_query.filter_exercises"
             }
             fillFilters(chartQuery);
-            makeChart(chartQuery.chart_type);
+            makeChart(chartQuery.chart_type, data);
             addStatsTable();
           }
     };

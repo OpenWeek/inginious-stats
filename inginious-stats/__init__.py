@@ -385,6 +385,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         error = None
         data = None
+        statistics = None
 
         if chart_type == "grades-distribution":
             if all_or_best_submissions == "all":
@@ -398,8 +399,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                     print(all_grades)
                     statistics = compute_advanced_stats(all_grades)
                     statistics["all_grades"] = all_grades
-                else:
-                    statistics = None
             else:
                 data = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
 

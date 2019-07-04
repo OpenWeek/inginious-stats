@@ -130,9 +130,10 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         """
         stats_tasks = self.database.submissions.aggregate(
             [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
+             {"$unwind":"$username"},
              {"$group": {"_id": "$taskid", "averageGrade": {"$avg": "$grade"},
                          "minGrade": {"$min": "$grade"},"maxGrade": {"$max": "$grade"},
-                         "allGrades": {"$push": "$grade"},
+                         "allGrades": {"$push": "$grade"}, "username": {"$first": "$username"},
                          "submissions": {"$sum": 1}, "validSubmissions":
                  {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}},
                          "tags": {"$first": "$tests"}}
@@ -144,6 +145,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "submissions": x["submissions"],
              "averageGrade": x["averageGrade"],
              "minGrade": x["minGrade"],
+             "username": x["username"],
              "maxGrade": x["maxGrade"],
              "allGrades": x["allGrades"],
              #"tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],

@@ -66,7 +66,6 @@ function makeChart(chartQuery, dataPoints) {
         return;
     }
 
-    console.log("Got " + dataPoints + " => " + (dataPoints === undefined));
     const chartTypeStr = chartQuery.chart_type;
 
     // Data placeholder
@@ -127,8 +126,10 @@ function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
 
     if (nbBuckets > max - min)
         nbBuckets = max - min;
-    if (nbBuckets <= 0)
+    if (nbBuckets < 0)
         return null;
+    else if (nbBuckets == 0)
+        nbBuckets = 1;
     while (max - min >= valuesPerBucket*nbBuckets)
         nbBuckets += 1;
 
@@ -136,6 +137,7 @@ function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
 
     for (let pt of rawData)
         result[Math.floor((pt - min) / valuesPerBucket)] += 1;
+    console.log(result);
     
 
     let labels = [];

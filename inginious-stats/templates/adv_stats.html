@@ -126,16 +126,22 @@ $if chart_query is not None:
               filter_tags: "$chart_query.filter_tags",
               filter_exercises: "$chart_query.filter_exercises"
             };
-            let stats = {
-              count: $data["count"],
-              min: $data["min"],
-              max: $data["max"],
-              mean: $data["mean"],
-              median: $data["median"],
-              mode: $data["mode"],
-              variance: $data["variance"],
-              std_deviation: $data["std_deviation"]
-            };
+            let stats = undefined;
+            /*
+            $if data is not None:
+            */
+              {
+                stats = {
+                  count: $data["count"],
+                  min: $data["min"],
+                  max: $data["max"],
+                  mean: $data["mean"],
+                  median: $data["median"],
+                  mode: $data["mode"],
+                  variance: $data["variance"],
+                  std_deviation: $data["std_deviation"]
+                };
+              }
             const data = $data["all_grades"];
 
             fillFilters(chartQuery);

@@ -105,8 +105,9 @@ function makeTagSortedChart(data) {
 
 
 function _computeBarSizes(rawData, nbBuckets) {
+    console.log("data: " + rawData + " buckets: " + nbBuckets);
     const max = Math.max.apply(null, rawData);
-    const valuePerBucket = Math.floor(max/nbBuckets);
+    const valuePerBucket = Math.max(1, Math.floor(max/nbBuckets));
 
     if (max >= valuePerBucket*nbBuckets)
         nbBuckets += 1;
@@ -116,6 +117,7 @@ function _computeBarSizes(rawData, nbBuckets) {
     for (let pt of rawData)
         result[Math.floor(pt/valuePerBucket)] += 1;
     
+    console.log("Result: " + result);
     return result;
 }
 

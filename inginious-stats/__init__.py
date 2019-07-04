@@ -35,7 +35,6 @@ def parse_query(query):
         end_time = datetime.now().replace(minute=0, second=0, microsecond=0)
 
     date_range = [start_time, end_time]
-    print(date_range)
 
     # Exercises filter
     exercise_list = [name.strip()
@@ -47,15 +46,31 @@ def parse_query(query):
                 if tag.strip() != ""]
 
     # Min-max grades
-    min_grade = None
-    if query.min_submission_grade is None and query.min_submission_grade != "":
-        min_grade = query.min_submission_grade
-    max_grade = None
-    if query.max_submission_grade is None and query.max_submission_grade != "":
-        max_grade = query.max_submission_grade
+    min_grade = 0
+    if query.min_submission_grade is not None and query.min_submission_grade != "":
+        percentage = query.min_submission_grade
+        if percentage.endswith('%'):
+            percentage = percentage[:-1]
+        min_grade = float(percentage)
+    max_grade = 100
+    if query.max_submission_grade is not None and query.max_submission_grade != "":
+        percentage = query.max_submission_grade
+        if percentage.endswith('%'):
+            percentage = percentage[:-1]
+        max_grade = float(percentage)
     grade_bounds = (min_grade, max_grade)
 
     return (query.chart_type, date_range, exercise_list, tag_list, grade_bounds, query.submissions_filter)
+
+def apply_grade_filter(grade_list, grade_bounds):
+    """
+    Returns the list `grade_list` without all the grades that are not
+    in the bounds `grade_bounds`.
+    """
+    (minimum, maximum) = grade_bounds
+    return [grade
+            for grade in grade_list
+            if grade >= minimum and grade <= maximum]
 
 
 def aggregate_all_grades(query_result):
@@ -155,30 +170,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
 ]
-
-    def _get_best_submissions(self, courseid, tasks, daterange):
-        """
-            Gives a list of only the best submission for each studentourseid
-            :param: - courseid: id of an inginious course
-                - list of the tasks for courseid
-                - daterange period for the query
-            :return: list of dict containing all best submissions per user
-        """
-        all_submissions = self.database.submissions.aggregate(
-            [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
-             {"$unwind":"$username"},
-             {"$group": {"_id": "$_id", "grade": {"$first": "$grade"}, "task": {"$first": "$taskid"},
-                         "username": {"$first": "$username"}, "tags": {"$first": "$tests"}}
-              }])
-        temp_dict = {}
-        for sub in all_submissions:
-            if sub["username"] in temp_dict:
-                if sub["grade"] > temp_dict[sub["username"]]["grade"]:
-                    temp_dict["username"] = sub
-            else:
-                temp_dict[sub["username"]] = sub
-        return list(temp_dict.values())
-
     def _task_failed_attempts(self, taskid, daterange):
         """ 
             Gives the number of failed attempts before first success 
@@ -339,6 +330,9 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             if (len(exec_list) == 0 or task["name"].strip() in exec_list) and add:
                 all_result.append(task)
 
+        if len(all_result) == 0:
+            return None
+        
         #Aggregate stats
         for elem in all_result[1:]: 
             all_result[0]["submissions"] += elem["submissions"]
@@ -351,12 +345,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         return all_result[0]  # TODO check correctness
 
     def _get_best_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
-        best = self._get_best_submissions(courseid, tasks, daterange)
-        result = []
-        print(best)
-        for submission in best:
-            result.append(submission["grade"])
-        return result
+        # TODO doc
+        return []
 
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
@@ -386,10 +376,9 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         tasks = course.get_tasks()
 
         chart_query = web.input(stats_from='', stats_to='', chart_type='', submissions_filter='', max_submission_grade='', min_submission_grade='', filter_tags='', filter_exercises='')
-        print("QUERY: " + str(chart_query))
 
-        (chart_type, daterange, exercises, tags, grade_boounds, all_or_best_submissions) = parse_query(chart_query)
-        now = datetime.now().replace(minute=0, second=0, microsecond=0)
+        (chart_type, daterange, exercises, tags, grade_bounds, all_or_best_submissions) = parse_query(chart_query)
+        print("QUERY: " + str((chart_type, daterange, exercises, tags, grade_bounds, all_or_best_submissions)))
 
         error = None
         data = None
@@ -397,14 +386,19 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         if chart_type == "grades-distribution":
             if all_or_best_submissions == "all":
                 data = self._get_all_distribution(courseid, tasks, daterange, exercises, tags)
-                print("AAAAAAAAAAAAAAAAAAAAA")
+                print("DB RETURNED")
                 print(data)
-                # all_grades = aggregate_all_grades(data)
-                all_grades = data["allGrades"]
+                if data is not None:
+                    # all_grades = aggregate_all_grades(data)
+                    all_grades = apply_grade_filter(data["allGrades"], grade_bounds)
+                    print("FILTERED "*3)
+                    print(all_grades)
+                    statistics = compute_advanced_stats(all_grades)
+                    statistics["all_grades"] = all_grades
+                else:
+                    statistics = None
             else:
-                all_grades = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
-            statistics = compute_advanced_stats(all_grades)
-            statistics["all_grades"] = all_grades
+                data = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
 
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)

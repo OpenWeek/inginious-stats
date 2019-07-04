@@ -146,12 +146,16 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "minGrade": x["minGrade"],
              "maxGrade": x["maxGrade"],
              "allGrades": x["allGrades"],
-             "tags": [y for y in x["tags"]],
+             "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
+             # or tags: [y for y in x["tags"]]
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
 ]
     def _task_failed_attempts(self, taskid, daterange):
-        """ Gives the number of failed attempts before first success """
+        """ 
+            Gives the number of failed attempts before first success 
+            for each student for the task {taskid} during the range {daterange}
+        """
         task_data =  self.database.submissions.aggregate(
             [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "taskid": taskid}},
             {"$sort": {"submitted_on": 1}}
@@ -173,7 +177,13 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         return result
 
     def _tags_stats(self, courseid, tasks, daterange):
-        # TODO doc
+        """
+        Get aggregated statistics about the submissions grouped by tags
+        :param: - courseid: id of an inginious course
+                - list of the tasks for courseid
+                - daterange period for the query
+        :return: list of dict containing the data per tag
+        """
         stats_tasks = self._tasks_stats(courseid, tasks, daterange)
         tag_stats = {}
         for x in stats_tasks:
@@ -181,7 +191,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 if tag not in tag_stats and tag != "":
                     tag_stats[tag] = {"submissions": x["submissions"],
                                       "validSubmissions": x["validSubmissions"],
-                                      "grade": [x["allGrades"]],
+                                      "allGrades": x["allGrades"],
                                       "minGrade": x["minGrade"],
                                       "maxGrade": x["maxGrade"],
                                       "averageGrade": x["averageGrade"]
@@ -189,32 +199,22 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 elif tag != "":
                     tag_stats[tag]["submissions"] += x["submissions"]
                     tag_stats[tag]["validSubmissions"] += x["validSubmissions"]
-                    tag_stats[tag]["averageGrade"] = (tag_stats[tag]["averageGrade"]*len(tag_stats[tag]["grade"]) 
-                                                      + x["averageGrade"]*len(x["grade"])) / (len(tag_stats[tag]["grade"])+len(x["grade"]))
-                    tag_stats[tag]["grade"].append(x["allGrades"])
-                    tag_stats[tag]["minGrade"] = min(tag_stats[tag]["grade"])
-                    tag_stats[tag]["minGrade"] = max(tag_stats[tag]["grade"])
+                    tag_stats[tag]["averageGrade"] = (tag_stats[tag]["averageGrade"]*len(tag_stats[tag]["allGrades"]) 
+                                                      + x["averageGrade"]*len(x["allGrades"])) / (len(tag_stats[tag]["allGrades"])+len(x["allGrades"]))
+                    tag_stats[tag]["allGrades"] = [item for sublist in tag_stats[tag]["allGrades"] for item in  x["allGrades"]]
+                    tag_stats[tag]["minGrade"] = min(tag_stats[tag]["allGrades"])
+                    tag_stats[tag]["maxGrade"] = max(tag_stats[tag]["allGrades"])
         return tag_stats
 
-    def _id_stats(self, courseid, tasks, daterange):
-        # TODO doc
-        stats_tasks = self._tasks_stats(courseid, tasks, daterange)
-
-        id_stats = {}
-        for x in stats_tasks:
-            for id_val in x["_id"]:
-                if id_val not in id_stats:
-                    id_stats[id_val] = {"submissions": x["submissions"],
-                                        "validSubmissions": x["validSubmissions"],
-                                        "grade": [x["grade"]]}
-                else:
-                    id_stats[id_val]["submissions"] += x["submissions"]
-                    id_stats[id_val]["validSubmissions"] += x["validSubmissions"]
-                    id_stats[id_val]["grade"].append(x["grade"])
-        return id_stats
 
     def _users_stats(self, courseid, daterange):
-        # TODO doc
+        """
+        Get statistics about all submissions of an user 
+        :param: - courseid: id of an inginious course
+                - daterange period for the query
+        :return: list of dict containing the data per user
+        """
+        #TODO : not used ?
         stats_users = self.database.submissions.aggregate([
             {"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
             {"$project": {"username": "$username", "result": "$result"}},
@@ -283,25 +283,48 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         valid_submissions = sorted(valid_submissions.items())
         return (all_submissions, valid_submissions)
 
-    def _get_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
-        # TODO doc
+    def _get_all_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
+        """
+        Get aggregated statistics about all submissions of tags {tag_list} and exercices {exec_list}
+        :param: - courseid: id of an inginious course
+                - list of the tasks for courseid
+                - daterange period for the query
+                - exec_list : the list of exercice names
+                - tag_list : the list of tags
+        :return: single dict containing the data
+        """
         stats_tags = self._tags_stats(courseid, tasks, daterange)
         print("="*20 + "TAGS STATS" + "="*20)
         print(stats_tags)
         all_result = []
         for tag in tag_list:
-            all_result.append(stats_tags[tag])
-        stats_exec = self._tasks_stats(courseid, tasks, daterange)
+            all_result.append(stats_tags[tag]) #Get the stats about wanted tags
+
+        stats_exec = self._tasks_stats(courseid, tasks, daterange) #Get other exercices
         print("="*20 + "EXERCISES STATS" + "="*20)
         print(stats_exec)
-        for task in stats_exec:
+        for task in stats_exec: #Add any missing exercices
             add = True
             for tag in tag_list:
                 if tag in task["tags"]:
                     add = False
             if (len(exec_list) == 0 or task["name"].strip() in exec_list) and add:
                 all_result.append(task)
-        return all_result  # TODO check correctness
+
+        #Aggregate stats
+        for elem in all_result[1:]: 
+            all_result[0]["submissions"] += elem["submissions"]
+            all_result[0]["validSubmissions"] += elem["validSubmissions"]
+            all_result[0]["averageGrade"] = (all_result[0]["averageGrade"] * len(all_result[0]["allGrades"]) 
+                                            + elem["averageGrade"]*len(elem["allGrades"])) / (len(all_result[0]["allGrades"]) + len(elem["allGrades"]))
+            all_result[0]["allGrades"] = [item for sublist in all_result[0]["allGrades"] for item in  elem["allGrades"]]
+            all_result[0]["minGrade"] = min(all_result[0]["allGrades"])
+            all_result[0]["maxGrade"] = max(all_result[0]["allGrades"])
+        return all_result[0]  # TODO check correctness
+
+    def _get_best_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
+        # TODO doc
+        return []
 
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
@@ -338,13 +361,17 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         error = None
         data = None
+
         if chart_type == "grades-distribution":
-            data = self._get_distribution(courseid, tasks, daterange, exercises, tags)
-            print("AAAAAAAAAAAAAAAAAAAAa")
-            print(data)
-            all_grades = aggregate_all_grades(data)
-            statistics = compute_advanced_stats(all_grades)
-            statistics["all_grades"] = all_grades
+            if all_or_best_submissions == "all":
+                data = self._get_all_distribution(courseid, tasks, daterange, exercises, tags)
+                print("AAAAAAAAAAAAAAAAAAAAA")
+                print(data)
+                all_grades = aggregate_all_grades(data)
+                statistics = compute_advanced_stats(all_grades)
+                statistics["all_grades"] = all_grades
+            else:
+                data = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
 
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)

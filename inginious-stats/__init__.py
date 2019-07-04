@@ -162,8 +162,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             for x in stats_tasks
 ]
     def _task_failed_attempts(self, taskid, daterange):
-        """ 
-            Gives the number of failed attempts before first success 
+        """
+            Gives the number of failed attempts before first success
             for each student for the task {taskid} during the range {daterange}
         """
         task_data =  self.database.submissions.aggregate(
@@ -209,7 +209,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 elif tag != "":
                     tag_stats[tag]["submissions"] += x["submissions"]
                     tag_stats[tag]["validSubmissions"] += x["validSubmissions"]
-                    tag_stats[tag]["averageGrade"] = (tag_stats[tag]["averageGrade"]*len(tag_stats[tag]["allGrades"]) 
+                    tag_stats[tag]["averageGrade"] = (tag_stats[tag]["averageGrade"]*len(tag_stats[tag]["allGrades"])
                                                       + x["averageGrade"]*len(x["allGrades"])) / (len(tag_stats[tag]["allGrades"])+len(x["allGrades"]))
                     tag_stats[tag]["allGrades"] = [item for sublist in tag_stats[tag]["allGrades"] for item in  x["allGrades"]]
                     tag_stats[tag]["minGrade"] = min(tag_stats[tag]["allGrades"])
@@ -219,7 +219,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
     def _users_stats(self, courseid, daterange):
         """
-        Get statistics about all submissions of an user 
+        Get statistics about all submissions of an user
         :param: - courseid: id of an inginious course
                 - daterange period for the query
         :return: list of dict containing the data per user
@@ -323,12 +323,12 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         if len(all_result) == 0:
             return None
-        
+
         #Aggregate stats
-        for elem in all_result[1:]: 
+        for elem in all_result[1:]:
             all_result[0]["submissions"] += elem["submissions"]
             all_result[0]["validSubmissions"] += elem["validSubmissions"]
-            all_result[0]["averageGrade"] = (all_result[0]["averageGrade"] * len(all_result[0]["allGrades"]) 
+            all_result[0]["averageGrade"] = (all_result[0]["averageGrade"] * len(all_result[0]["allGrades"])
                                             + elem["averageGrade"]*len(elem["allGrades"])) / (len(all_result[0]["allGrades"]) + len(elem["allGrades"]))
             all_result[0]["allGrades"] = [item for sublist in all_result[0]["allGrades"] for item in  elem["allGrades"]]
             all_result[0]["minGrade"] = min(all_result[0]["allGrades"])

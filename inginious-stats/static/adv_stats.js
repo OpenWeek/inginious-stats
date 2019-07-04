@@ -77,10 +77,10 @@ function makeChart(chartTypeStr, dataPoints) {
 
 function makeGradeDistroChart(rawData) {
     // TODO This doesn't work for non integer numbers in `rawData`
-    const data = _computeBarSizes(rawData);
-    const processedData = _groupBars(data);
-    const labels = _createConsecutiveLabels(0, 101/*, 20*/);
-    _displayChart("bar", labels, processedData);
+    const nbBars = 20;
+    const data = _computeBarSizes(rawData, nbBars);
+    const labels = _createConsecutiveLabels(0, 101, nbBars);
+    _displayChart("bar", labels, data);
 }
 function makeNbSubmissionsBfPerfectChart(data) {
     const min = 10; // TODO find min from data
@@ -104,27 +104,19 @@ function makeTagSortedChart(data) {
 }
 
 
-function _computeBarSizes(rawData) {
-    barsDict = {};
-    for (let pt of rawData) {
-        if (!(pt in barsDict))
-            barsDict[pt] = 1;
-        else
-            barsDict[pt]++;
-    }
+function _computeBarSizes(rawData, nbBuckets) {
+    const max = Math.max.apply(null, rawData);
+    const valuePerBucket = Math.floor(max/nbBuckets);
 
-    const groups = Object.keys(barsDict).sort();
-    const max = groups[groups.length - 1];
+    if (max >= valuePerBucket*nbBuckets)
+        nbBuckets += 1;
+
+    let result = new Array(nbBuckets).fill(0);
+
+    for (let pt of rawData)
+        result[Math.floor(pt/valuePerBucket)] += 1;
     
-    let barData = [];
-    for (let i=0; i <= max; i++) {
-        if (i in barsDict)
-            barData.push(barsDict[i]);
-        else
-            barData.push(0);
-    }
-
-    return barData;
+    return result;
 }
 
 const maxNbBars = 200; // TODO tmp, change that number
@@ -184,8 +176,11 @@ function _createConsecutiveLabels(min, max, maxNbGroups=maxNbBars) {
 
     if (!labels[labels.length-1].endsWith(max-1)) {
         let lastLabel = labels[labels.length-1];
-        let lastNb = lastLabel.split(" ")[2];
-        labels.push((lastNb+1) + " to " + (max-1));
+        let lastNb = parseInt(lastLabel.split(" ")[2]);
+        if (lastNb+1 == max-1)
+            labels.push(max-1);
+        else
+            labels.push((lastNb+1) + " to " + (max-1));
     }
     return labels;
 }

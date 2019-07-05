@@ -103,13 +103,15 @@ def aggregate_all_grades(query_result):
     return result
 def process_nb_attempts_dict(query_result):
     """
-    Given a dict containing the number of attempts before 100% for each user,
+    Given a dict containing the number of attempts before 100% for each user
+    and task,
     returns a list of all the number of attempts (without the additional
     information contained in the dict).
     """
     result = []
     for username in query_result:
-        result.append(query_result[username]["tries"])
+        for task_id in query_result[username]:
+            result.append(query_result[username][task_id]["attempts"])
     return result
 
 
@@ -230,24 +232,22 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         result = {}
         for x in task_data:
+            print("TASK DATA: " + str(x))
             username = x["username"][0]
-            if x["grade"] < minimum or x["grade"] > maximum:
-                if x["result"] == "success":
-                    if username not in result:
-                        result[username] = {"tries": 0, "done": True}
-                    else:
-                        result[username]["done"] = True
-                continue
+            task_id = x["taskid"]
             if username not in result:
-                if x["result"] == "success":
-                    result[username] = {"tries": 1, "done": True}
-                else:
-                    result[username] = {"tries": 1, "done": False}
-            elif not result[username]["done"]:
-                if x["result"] == "success":
-                    result[username]["done"] = True
-                else:
-                    result[username]["tries"] +=1
+                result[username] = dict()
+            if task_id not in result[username]:
+                result[username][task_id] = {"attempts": 0, "done": False}
+
+            if x["result"] == "success":
+                result[username][task_id]["done"] = True
+
+            if x["grade"] < minimum or x["grade"] > maximum:
+                continue
+            print("done? " + str(result[username][task_id]["done"]))
+            if not result[username][task_id]["done"]:
+                result[username][task_id]["attempts"] += 1
         return result
 
     def _tags_stats(self, courseid, tasks, daterange):

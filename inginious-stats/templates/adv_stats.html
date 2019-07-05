@@ -28,8 +28,8 @@ $var Column: $:template_helper.call('course_admin_menu',course=course,current='a
     <h4>Filters</h4>
     <div class="form-row">
         <div class="form-group col-md-4">
-          <input type="radio" name="submissions_filter" id="submissions_filter_all" value="all" checked>$:_("All submissions")</input> <br/>
-          <input type="radio" name="submissions_filter" id="submissions_filter_best" value="best">$:_("Best submission for each student")</input> <br/>
+          <label for="submissions_filter_all"><input type="radio" name="submissions_filter" id="submissions_filter_all" value="all" checked />$:_("All submissions")</label> <br/>
+          <label for="submissions_filter_best"><input type="radio" name="submissions_filter" id="submissions_filter_best" value="best" />$:_("Best submission for each student")</label> <br/>
         </div>
         <div class="form-group col-md-4">
             <label for="min_submission_grade">$:_("Submissions graded from (in percent)")</label>

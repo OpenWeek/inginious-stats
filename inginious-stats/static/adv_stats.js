@@ -77,11 +77,6 @@ const chartTypeCorrespondence = {
     "submissions-time": makeSubmissionTimeGraph,
     "tag-sorted": makeTagSortedChart
 }
-const labels = {
-    "grades-distribution": [],
-    "submission-before-perfect": [],
-    "submissions-time": []
-}
 
 function makeChart(chartQuery, dataPoints, times) {
     /* Creates the chart requested by the user and adds it to the page. */

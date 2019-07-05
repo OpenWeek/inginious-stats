@@ -1,4 +1,16 @@
 /* JS for template */
+function checkMinMax() {
+    /* Checks that the min and max (for grades) provided by the user are valid. */
+    let min = $("#min_submission_grade")[0].value;
+    let max = $("#max_submission_grade")[0].value;
+    if (min.endsWith('%'))
+        min = min.slice(0, -1);
+    if (max.endsWith('%'))
+        max = max.slice(0, -1);
+    if (min > max)
+        alert("Warning: inconsistent grade boundaries (min > max)");
+}
+
 function fillFilters(query) {
     /* Sets all the filters with the value that was requested by the user. */
     if (query.chart_type) {

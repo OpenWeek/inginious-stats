@@ -78,7 +78,7 @@ const chartTypeCorrespondence = {
     "tag-sorted": makeTagSortedChart
 }
 
-function makeChart(chartQuery, dataPoints) {
+function makeChart(chartQuery, dataPoints, times) {
     /* Creates the chart requested by the user and adds it to the page. */
     if (dataPoints === undefined) {
         _showEmptyChart();
@@ -97,6 +97,8 @@ function makeChart(chartQuery, dataPoints) {
 
     if ((chartTypeStr == "grades-distribution" || chartTypeStr == "submission-before-perfect") && dataPoints)
         chartTypeCorrespondence[chartTypeStr](chartQuery, dataPoints);
+    else if (chartTypeStr == "submissions-time" && dataPoints)
+        chartTypeCorrespondence[chartTypeStr](chartQuery, dataPoints, times);
     else
         chartTypeCorrespondence[chartTypeStr](chartQuery, data);
 }
@@ -135,8 +137,8 @@ function makeLinePerSubmissionChart(query, data) {
     const labels = _createConsecutiveLabels(min, max);
     _displayChart("bar", labels, data);
 }
-function makeSubmissionTimeGraph(query, data) {
-    _displayChart("line", ["lundi", "mardi", "mercredi", "TODO"], data);
+function makeSubmissionTimeGraph(query, data, times) {
+    _displayChart("line", times, data);
 }
 function makeTagSortedChart(query, data) {
     _displayChart("bar", ["Timeout", "Segfault", "Cannot compile", "Could compile"], data);

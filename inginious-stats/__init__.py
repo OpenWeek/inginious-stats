@@ -150,6 +150,27 @@ def compute_advanced_stats(data):
         "variance": np.var(data),
         "std_deviation": np.std(data)
     }
+def compute_temporal_advanced_stats(data):
+    """
+    Given a list of temporal data points `data`,
+    computes the count, min and max.
+    Returns a dict with the same keys as the one returned by
+    `compute_advanced_stats`.
+    """
+    count = len(data)
+    if count == 0:
+        return None
+
+    return {
+        "count": count,
+        "min": np.amin(data),
+        "max": np.amax(data),
+        "mean": -1,
+        "median": -1,
+        "mode": -1,
+        "variance": -1,
+        "std_deviation": -1
+    }
 
 
 class AdvancedCourseStatisticClass(INGIniousAdminPage):
@@ -429,9 +450,14 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         elif chart_type == "submissions-time":
             (times, nb_submissions_per_time) = self._get_submissions_per_time(courseid, tasks, daterange, exercises, grade_bounds)
+            statistics = compute_temporal_advanced_stats(nb_submissions_per_time)
+            statistics["raw_data"] = nb_submissions_per_time
+            statistics["times"] = times
             print("TIMES: " + str(times))
             print("NB: " + str(nb_submissions_per_time))
 
+        if "times" not in statistics:
+            statistics["times"] = 0  # Placeholder
         print("DB RETURNED")
         print(data)
         print("FINALLY: " + str(statistics))

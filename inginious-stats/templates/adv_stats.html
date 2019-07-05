@@ -133,6 +133,7 @@ $if chart_query is not None:
             };
             let stats = undefined;
             let data = undefined;
+            let times = undefined;
             /*
             $if data is not None:
             */
@@ -147,11 +148,16 @@ $if chart_query is not None:
                   std_deviation: $data["std_deviation"]
                 };
                 data = $data["raw_data"];
+                times = [];
+                /*
+                $for t in data["times"]:
+                //*/
+                    times.push("$t");
           //*/
 
           fillFilters(chartQuery);
 
-          makeChart(chartQuery, data, stats);
+          makeChart(chartQuery, data, times);
           addStatsTable(stats);
           }
     };

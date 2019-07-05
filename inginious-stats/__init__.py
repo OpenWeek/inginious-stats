@@ -11,6 +11,22 @@ from datetime import datetime, date, timedelta
 
 PATH_TO_PLUGIN = os.path.abspath(os.path.dirname(__file__))
 
+class StaticMockPage(object):
+    # TODO: Replace by shared static middleware and let webserver serve the files
+
+    def GET(self, path):
+        if not os.path.abspath(PATH_TO_PLUGIN) in os.path.abspath(os.path.join(PATH_TO_PLUGIN, path)):
+            raise web.notfound()
+
+        try:
+            with open(os.path.join(PATH_TO_PLUGIN, "static", path), 'rb') as file:
+                return file.read()
+        except:
+            raise web.notfound()
+
+    def POST(self, path):
+        return self.GET(path)
+
 
 def add_admin_menu(course): # pylint: disable=unused-argument
     """ Add a menu for the contest settings in the administration """
@@ -166,13 +182,13 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "username": x["username"],
              "maxGrade": x["maxGrade"],
              "allGrades": x["allGrades"],
-             # "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
+             #"tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
              "tags": [y for y in x["tags"]],
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
         ]
 
-    def _get_best_submissions(self, courseid, tasks, daterange):
+    def _get_best_submissions(self, courseid, tasks, tasks_id, daterange):
         """
             Gives a list of only the best submission for each studentourseid
             :param: - courseid: id of an inginious course
@@ -181,7 +197,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             :return: list of dict containing all best submissions per user
         """
         all_submissions = self.database.submissions.aggregate(
-            [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
+            [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid,
+              "taskid": {"$in":tasks_id}}},
              {"$unwind":"$username"},
              {"$group": {"_id": "$_id", "grade": {"$first": "$grade"}, "task": {"$first": "$taskid"},
                          "username": {"$first": "$username"}, "tags": {"$first": "$tests"}}
@@ -258,83 +275,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                     tag_stats[tag]["maxGrade"] = max(tag_stats[tag]["allGrades"])
         return tag_stats
 
-
-    def _users_stats(self, courseid, daterange):
-        """
-        Get statistics about all submissions of an user
-        :param: - courseid: id of an inginious course
-                - daterange period for the query
-        :return: list of dict containing the data per user
-        """
-        #TODO : not used ?
-        stats_users = self.database.submissions.aggregate([
-            {"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
-            {"$project": {"username": "$username", "result": "$result"}},
-            {"$unwind": "$username"},
-            {"$group": {"_id": "$username", "submissions": {"$sum": 1}, "validSubmissions":
-                {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}}}
-             },
-            {"$sort": {"submissions": -1}}])
-
-        return [
-            {"name": x["_id"],
-             "submissions": x["submissions"],
-             "validSubmissions": x["validSubmissions"]}
-            for x in stats_users
-        ]
-
-    def _graph_stats(self, courseid, daterange):
-        # TODO improve
-        project = {
-            "year": {"$year": "$submitted_on"},
-            "month": {"$month": "$submitted_on"},
-            "day": {"$dayOfMonth": "$submitted_on"},
-            "result": "$result"
-        }
-        groupby = {"year": "$year", "month": "$month", "day": "$day"}
-
-        method = "day"
-        if (daterange[1] - daterange[0]).days < 7:
-            project["hour"] = {"$hour": "$submitted_on"}
-            groupby["hour"] = "$hour"
-            method = "hour"
-
-        min_date = daterange[0].replace(minute=0, second=0, microsecond=0)
-        max_date = daterange[1].replace(minute=0, second=0, microsecond=0)
-        delta1 = timedelta(hours=1)
-        if method == "day":
-            min_date = min_date.replace(hour=0)
-            max_date = max_date.replace(hour=0)
-            delta1 = timedelta(days=1)
-
-        stats_graph = self.database.submissions.aggregate(
-            [{"$match": {"submitted_on": {"$gte": min_date, "$lt": max_date+delta1}, "courseid": courseid}},
-             {"$project": project},
-             {"$group": {"_id": groupby, "submissions": {"$sum": 1}, "validSubmissions":
-                 {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}}}
-              },
-             {"$sort": {"_id": 1}}])
-
-        increment = timedelta(days=(1 if method == "day" else 0), hours=(0 if method == "day" else 1))
-
-        all_submissions = {}
-        valid_submissions = {}
-
-        cur = min_date
-        while cur <= max_date:
-            all_submissions[cur] = 0
-            valid_submissions[cur] = 0
-            cur += increment
-
-        for entry in stats_graph:
-            c = datetime(entry["_id"]["year"], entry["_id"]["month"], entry["_id"]["day"], 0 if method == "day" else entry["_id"]["hour"])
-            all_submissions[c] += entry["submissions"]
-            valid_submissions[c] += entry["validSubmissions"]
-
-        all_submissions = sorted(all_submissions.items())
-        valid_submissions = sorted(valid_submissions.items())
-        return (all_submissions, valid_submissions)
-
     def _get_all_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
         """
         Get aggregated statistics about all submissions of tags {tag_list} and exercices {exec_list}
@@ -349,23 +289,21 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         print("="*20 + "TAGS STATS" + "="*20)
         print(stats_tags)
         all_result = []
+        
         for tag in tag_list:
             all_result.append(stats_tags[tag]) #Get the stats about wanted tags
-
+            
         stats_exec = self._tasks_stats(courseid, tasks, daterange) #Get other exercices
         print("="*20 + "EXERCISES STATS" + "="*20)
         print(stats_exec)
         for task in stats_exec: #Add any missing exercices
-            add = True
+            add = False
             for tag in tag_list:
                 if tag in task["tags"]:
-                    add = False
+                    add = True
             print("asked: '" + str(exec_list) + "' name: '" + str(task["name"].strip()) + "'")
-            print(len(exec_list))
             if (len(exec_list) == 0 or task["name"].strip() in exec_list) and add:
-                print("test")
                 all_result.append(task)
-                print("all result is now: " + str(all_result))
 
         if len(all_result) == 0:
             return None
@@ -374,41 +312,31 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
     def _get_best_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
         #TODO doc
-        best = self._get_best_submissions(courseid, tasks, daterange)
+        tasks_id = self._get_ids_from_name(tasks, exec_list)
+        
+        best = self._get_best_submissions(courseid, tasks, tasks_id, daterange)
         result = []
-        print(best)
         for submission in best:
             result.append(submission["grade"])
         return result
 
     def _get_before_perfect(self, courseid, tasks, daterange, exec_list):
         #TODO doc
+        tasks_id = self._get_ids_from_name(tasks, exec_list)
+        data = self._get_task_failed_attempts(courseid, tasks_id, daterange)
+        return data
+
+    def _get_ids_from_name(self, tasks, exec_list):
         all_tasks_id = []
         for t in tasks:
-            if t in exec_list:
+            if tasks[t]._name.strip() in exec_list:
                 all_tasks_id.append(tasks[t].get_id())
-        print("tasks id: "+str(all_tasks_id))
-        data = self._get_task_failed_attempts(courseid, all_tasks_id, daterange)
-        print("failed attempts: " + str(data))
-        return data
+        return all_tasks_id
 
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """
         # TODO no idea what f and t are
         course, __ = self.get_course_and_check_rights(courseid)
-        tasks = course.get_tasks()
-        now = datetime.now().replace(minute=0, second=0, microsecond=0)
-
-        error = None
-        if f == None and t == None:
-            daterange = [now - timedelta(days=14), now]
-        else:
-            try:
-                daterange = [datetime.strptime(x[0:16], "%Y-%m-%dT%H:%M") for x in (f, t)]
-            except:
-                error = "Invalid dates"
-                daterange = [now - timedelta(days=14), now]
-
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, None, None)
 
     def POST_AUTH(self, courseid):
@@ -425,7 +353,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         chart_query.min_submission_grade = minimum
         chart_query.max_submission_grade = maximum
 
-        error = None
         data = None
         statistics = None
 
@@ -467,21 +394,4 @@ def init(plugin_manager, course_factory, client, plugin_config):  # pylint: disa
     plugin_manager.add_page('/plugins/stats/static/(.+)', StaticMockPage)
     plugin_manager.add_hook('css', lambda: '/plugins/stats/static/adv_stats.css')
     plugin_manager.add_hook('javascript_header', lambda: '/plugins/stats/static/adv_stats.js')
-
-
-class StaticMockPage(object):
-    # TODO: Replace by shared static middleware and let webserver serve the files
-
-    def GET(self, path):
-        if not os.path.abspath(PATH_TO_PLUGIN) in os.path.abspath(os.path.join(PATH_TO_PLUGIN, path)):
-            raise web.notfound()
-
-        try:
-            with open(os.path.join(PATH_TO_PLUGIN, "static", path), 'rb') as file:
-                return file.read()
-        except:
-            raise web.notfound()
-
-    def POST(self, path):
-        return self.GET(path)
 

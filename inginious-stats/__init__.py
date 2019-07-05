@@ -178,11 +178,11 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
               }])
         temp_dict = {}
         for sub in all_submissions:
-            if sub["username"] in temp_dict:
-                if sub["grade"] > temp_dict[sub["username"]]["grade"]:
-                    temp_dict["username"] = sub
+            if sub["username"]+str(sub["_id"]) in temp_dict:
+                if sub["grade"] > temp_dict[sub["username"]+str(sub["_id"])]["grade"]:
+                    temp_dict[sub["username"]+str(sub["_id"])] = sub
             else:
-                temp_dict[sub["username"]] = sub
+                temp_dict[sub["username"]+str(sub["_id"])] = sub
         return list(temp_dict.values())
 
     def _get_task_failed_attempts(self, courseid, taskid, daterange):

@@ -125,7 +125,7 @@ function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
     const valuesPerBucket = Math.max(1, Math.floor((max - min) / nbBuckets));
 
     if (nbBuckets > max - min)
-        nbBuckets = max - min;
+        nbBuckets = Math.ceil(max - min);
     if (nbBuckets < 0)
         return null;
     else if (nbBuckets == 0)

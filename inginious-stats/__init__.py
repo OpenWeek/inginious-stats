@@ -250,6 +250,38 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 result[username][task_id]["attempts"] += 1
         return result
 
+    def _get_submissions_by_time(self, courseid, taskid, daterange, grade_bounds):
+        """
+            Gives the number of failed attempts before first success
+            for each student for the task {taskid} during the range {daterange}
+            and taking into account only attempts with grade in {grade_bounds}.
+        """
+        (minimum, maximum) = grade_bounds
+
+        if len(taskid) == 0:
+            task_data =  self.database.submissions.aggregate(
+                [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]},
+                  "courseid": courseid}},
+                 {"$sort": {"submitted_on": 1}}]
+            )
+        else:
+            task_data =  self.database.submissions.aggregate(
+                [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]},
+                  "courseid": courseid, "taskid": {"$in":taskid}}},
+                 {"$sort": {"submitted_on": 1}}]
+            )
+
+        timestamps = []
+        submissions_per_timestamp = []
+        for x in task_data:
+            if x["submitted_on"] == timestamps[-1] :
+                submissions_per_timestamp[-1] += 1
+            else :
+                timestamps += x["submitted_on"]
+                submissions_per_timestamp += [1]
+        
+        return (timestamps, submissions_per_timestamp)
+    
     def _tags_stats(self, courseid, tasks, daterange):
         """
         Get aggregated statistics about the submissions grouped by tags

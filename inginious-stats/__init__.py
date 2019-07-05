@@ -289,19 +289,22 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         print("="*20 + "TAGS STATS" + "="*20)
         print(stats_tags)
         all_result = []
-        
+
         for tag in tag_list:
             all_result.append(stats_tags[tag]) #Get the stats about wanted tags
-            
+
         stats_exec = self._tasks_stats(courseid, tasks, daterange) #Get other exercices
         print("="*20 + "EXERCISES STATS" + "="*20)
         print(stats_exec)
         for task in stats_exec: #Add any missing exercices
             add = False
+            if (len(tag_list) == 0):
+                add = True
             for tag in tag_list:
                 if tag in task["tags"]:
                     add = True
             print("asked: '" + str(exec_list) + "' name: '" + str(task["name"].strip()) + "'")
+            print(len(exec_list))
             if (len(exec_list) == 0 or task["name"].strip() in exec_list) and add:
                 all_result.append(task)
 
@@ -313,7 +316,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
     def _get_best_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
         #TODO doc
         tasks_id = self._get_ids_from_name(tasks, exec_list)
-        
+
         best = self._get_best_submissions(courseid, tasks, tasks_id, daterange)
         result = []
         for submission in best:

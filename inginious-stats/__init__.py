@@ -178,11 +178,11 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
               }])
         temp_dict = {}
         for sub in all_submissions:
-            if sub["username"] in temp_dict:
-                if sub["grade"] > temp_dict[sub["username"]]["grade"]:
-                    temp_dict["username"] = sub
+            if sub["username"]+str(sub["task"]) in temp_dict:
+                if sub["grade"] > temp_dict[sub["username"]+str(sub["task"])]["grade"]:
+                    temp_dict[sub["username"]+str(sub["task"])] = sub
             else:
-                temp_dict[sub["username"]] = sub
+                temp_dict[sub["username"]+str(sub["task"])] = sub
         return list(temp_dict.values())
 
     def _get_task_failed_attempts(self, courseid, taskid, daterange):
@@ -435,7 +435,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 statistics = compute_advanced_stats(all_grades)
                 if statistics is not None:
                     statistics["all_grades"] = all_grades
-                    
+
         elif chart_type == "submission-before-perfect":
             data = self._get_before_perfect(courseid, tasks, daterange, exercises)
             print(data)

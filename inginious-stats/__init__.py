@@ -318,22 +318,27 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             for tag in tag_list:
                 if tag in task["tags"]:
                     add = False
+            print("asked: '" + str(exec_list) + "' name: '" + str(task["name"].strip()) + "'")
+            print(len(exec_list))
             if (len(exec_list) == 0 or task["name"].strip() in exec_list) and add:
+                print("test")
                 all_result.append(task)
+                print("all result is now: " + str(all_result))
 
         if len(all_result) == 0:
             return None
 
         #Aggregate stats
-        for elem in all_result[1:]:
-            all_result[0]["submissions"] += elem["submissions"]
-            all_result[0]["validSubmissions"] += elem["validSubmissions"]
-            all_result[0]["averageGrade"] = (all_result[0]["averageGrade"] * len(all_result[0]["allGrades"])
-                                            + elem["averageGrade"]*len(elem["allGrades"])) / (len(all_result[0]["allGrades"]) + len(elem["allGrades"]))
-            all_result[0]["allGrades"] = [item for sublist in all_result[0]["allGrades"] for item in  elem["allGrades"]]
-            all_result[0]["minGrade"] = min(all_result[0]["allGrades"])
-            all_result[0]["maxGrade"] = max(all_result[0]["allGrades"])
-        return all_result[0]  # TODO check correctness
+        # for elem in all_result[1:]:
+        #     all_result[0]["submissions"] += elem["submissions"]
+        #     all_result[0]["validSubmissions"] += elem["validSubmissions"]
+        #     all_result[0]["averageGrade"] = (all_result[0]["averageGrade"] * len(all_result[0]["allGrades"])
+        #                                     + elem["averageGrade"]*len(elem["allGrades"])) / (len(all_result[0]["allGrades"]) + len(elem["allGrades"]))
+        #     all_result[0]["allGrades"] = [item for sublist in all_result[0]["allGrades"] for item in  elem["allGrades"]]
+        #     all_result[0]["minGrade"] = min(all_result[0]["allGrades"])
+        #     all_result[0]["maxGrade"] = max(all_result[0]["allGrades"])
+        # return all_result[0]  # TODO check correctness
+        return aggregate_all_grades(all_result)
 
     def _get_best_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
         # TODO doc
@@ -381,28 +386,18 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         if chart_type == "grades-distribution":
             if all_or_best_submissions == "all":
                 data = self._get_all_distribution(courseid, tasks, daterange, exercises, tags)
-                print("DB RETURNED")
-                print(data)
-                if data is not None:
-                    # all_grades = aggregate_all_grades(data)
-                    all_grades = apply_grade_filter(data["allGrades"], grade_bounds)
-                    print("FILTERED "*3)
-                    print(all_grades)
-                    statistics = compute_advanced_stats(all_grades)
-                    if statistics is not None:
-                        statistics["all_grades"] = all_grades
             else:  # "best
                 data = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
-                print("DB RETURNED")
-                print(data)
-                if data is not None:
-                    # all_grades = aggregate_all_grades(data)
-                    all_grades = apply_grade_filter(data, grade_bounds)
-                    print("FILTERED "*3)
-                    print(all_grades)
-                    statistics = compute_advanced_stats(all_grades)
-                    if statistics is not None:
-                        statistics["all_grades"] = all_grades
+            print("DB RETURNED")
+            print(data)
+            if data is not None:
+                # all_grades = aggregate_all_grades(data)
+                all_grades = apply_grade_filter(data, grade_bounds)
+                print("FILTERED "*3)
+                print(all_grades)
+                statistics = compute_advanced_stats(all_grades)
+                if statistics is not None:
+                    statistics["all_grades"] = all_grades
 
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)

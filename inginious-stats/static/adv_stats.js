@@ -4,9 +4,9 @@ function checkMinMax() {
     let min = $("#min_submission_grade")[0].value;
     let max = $("#max_submission_grade")[0].value;
     if (min.endsWith('%'))
-        min = min.slice(0, -1);
+        min = parseFloat(min.slice(0, -1));
     if (max.endsWith('%'))
-        max = max.slice(0, -1);
+        max = parseFloat(max.slice(0, -1));
     if (min > max)
         alert("Warning: inconsistent grade boundaries (min > max)");
 }

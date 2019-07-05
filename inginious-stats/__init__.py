@@ -212,11 +212,14 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 temp_dict[sub["username"]+str(sub["task"])] = sub
         return list(temp_dict.values())
 
-    def _get_task_failed_attempts(self, courseid, taskid, daterange):
+    def _get_task_failed_attempts(self, courseid, taskid, daterange, grade_bounds):
         """
             Gives the number of failed attempts before first success
             for each student for the task {taskid} during the range {daterange}
+            and taking into account only attempts with grade in {grade_bounds}.
         """
+        (minimum, maximum) = grade_bounds
+
         if len(taskid) == 0:
             task_data =  self.database.submissions.aggregate(
                 [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]},
@@ -232,17 +235,25 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         result = {}
         for x in task_data:
-            if x["username"][0] not in result:
+            print("TASK DATA: " + str(x))
+            username = x["username"][0]
+            if x["grade"] < minimum or x["grade"] > maximum:
                 if x["result"] == "success":
-                    result[x["username"][0]] = {"tries":1, "done":True}
-                else:
-                    result[x["username"][0]] = {"tries":1, "done":False}
-            else:
-                if not result[x["username"][0]]["done"]:
-                    if x["result"] == "success":
-                        result[x["username"][0]]["done"] = True
+                    if username not in result:
+                        result[username] = {"tries": 0, "done": True}
                     else:
-                        result[x["username"][0]]["tries"] +=1
+                        result[username]["done"] = True
+                continue
+            if username not in result:
+                if x["result"] == "success":
+                    result[username] = {"tries": 1, "done": True}
+                else:
+                    result[username] = {"tries": 1, "done": False}
+            elif not result[username]["done"]:
+                if x["result"] == "success":
+                    result[username]["done"] = True
+                else:
+                    result[username]["tries"] +=1
         return result
 
     def _tags_stats(self, courseid, tasks, daterange):
@@ -323,10 +334,10 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             result.append(submission["grade"])
         return result
 
-    def _get_before_perfect(self, courseid, tasks, daterange, exec_list):
+    def _get_before_perfect(self, courseid, tasks, daterange, exec_list, grade_bounds):
         #TODO doc
         tasks_id = self._get_ids_from_name(tasks, exec_list)
-        data = self._get_task_failed_attempts(courseid, tasks_id, daterange)
+        data = self._get_task_failed_attempts(courseid, tasks_id, daterange, grade_bounds)
         return data
 
     def _get_ids_from_name(self, tasks, exec_list):
@@ -377,7 +388,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                     statistics["raw_data"] = all_grades
 
         elif chart_type == "submission-before-perfect":
-            data = self._get_before_perfect(courseid, tasks, daterange, exercises)
+            data = self._get_before_perfect(courseid, tasks, daterange, exercises, grade_bounds)
             print("DB RETURNED")
             print(data)
             if data is not None:
@@ -385,6 +396,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 statistics = compute_advanced_stats(all_tries)
                 if statistics is not None:
                     statistics["raw_data"] = all_tries
+
+        print("FINALLY: " + str(statistics))
 
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)

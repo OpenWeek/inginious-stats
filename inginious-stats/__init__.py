@@ -391,8 +391,18 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                     statistics = compute_advanced_stats(all_grades)
                     if statistics is not None:
                         statistics["all_grades"] = all_grades
-            else:
+            else:  # "best
                 data = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
+                print("DB RETURNED")
+                print(data)
+                if data is not None:
+                    # all_grades = aggregate_all_grades(data)
+                    all_grades = apply_grade_filter(data, grade_bounds)
+                    print("FILTERED "*3)
+                    print(all_grades)
+                    statistics = compute_advanced_stats(all_grades)
+                    if statistics is not None:
+                        statistics["all_grades"] = all_grades
 
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)

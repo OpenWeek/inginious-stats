@@ -80,11 +80,21 @@ def aggregate_all_grades(query_result):
     aggregates the grades for all the exercises in just one list
     and returns it.
     """
-    answer = []
+    result = []
     for exercise in query_result:
         if "allGrades" in exercise:
-            answer.extend(exercise["allGrades"])
-    return answer
+            result.extend(exercise["allGrades"])
+    return result
+def process_nb_attempts_dict(query_result):
+    """
+    Given a dict containing the number of attempts before 100% for each user,
+    returns a list of all the number of attempts (without the additional
+    information contained in the dict).
+    """
+    result = []
+    for username in query_result:
+        result.append(query_result[username]["tries"])
+    return result
 
 
 def compute_advanced_stats(data):
@@ -190,11 +200,18 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             Gives the number of failed attempts before first success
             for each student for the task {taskid} during the range {daterange}
         """
-        task_data =  self.database.submissions.aggregate(
-            [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, 
-              "courseid": courseid, "taskid": {"$in":taskid}}},
-            {"$sort": {"submitted_on": 1}}
-            ])
+        if len(taskid) == 0:
+            task_data =  self.database.submissions.aggregate(
+                [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]},
+                  "courseid": courseid}},
+                 {"$sort": {"submitted_on": 1}}]
+            )
+        else:
+            task_data =  self.database.submissions.aggregate(
+                [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]},
+                  "courseid": courseid, "taskid": {"$in":taskid}}},
+                 {"$sort": {"submitted_on": 1}}]
+            )
 
         result = {}
         for x in task_data:
@@ -370,8 +387,9 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         for t in tasks:
             if t in exec_list:
                 all_tasks_id.append(tasks[t].get_id())
-        print(all_tasks_id)
+        print("tasks id: "+str(all_tasks_id))
         data = self._get_task_failed_attempts(courseid, all_tasks_id, daterange)
+        print("failed attempts: " + str(data))
         return data
 
     def GET_AUTH(self, courseid, f=None, t=None):
@@ -426,13 +444,17 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 print(all_grades)
                 statistics = compute_advanced_stats(all_grades)
                 if statistics is not None:
-                    statistics["all_grades"] = all_grades
+                    statistics["raw_data"] = all_grades
 
         elif chart_type == "submission-before-perfect":
             data = self._get_before_perfect(courseid, tasks, daterange, exercises)
+            print("DB RETURNED")
             print(data)
             if data is not None:
-                statistics = None
+                all_tries = process_nb_attempts_dict(data)
+                statistics = compute_advanced_stats(all_tries)
+                if statistics is not None:
+                    statistics["raw_data"] = all_tries
 
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)

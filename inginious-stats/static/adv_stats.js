@@ -76,7 +76,7 @@ function makeChart(chartQuery, dataPoints) {
         data[i] = tmp;
     }
 
-    if (chartTypeStr == "grades-distribution" && dataPoints)
+    if ((chartTypeStr == "grades-distribution" || chartTypeStr == "submission-before-perfect") && dataPoints)
         chartTypeCorrespondence[chartTypeStr](chartQuery, dataPoints);
     else
         chartTypeCorrespondence[chartTypeStr](chartQuery, data);
@@ -86,7 +86,7 @@ function makeGradeDistroChart(query, rawData) {
     // TODO This doesn't work for non integer numbers in `rawData`
     const nbBars = 20;
     const bars = _computeBarSizes(
-        rawData, nbBars, parseFloat(query.min_submission_grade), parseFloat(query.max_submission_grade));
+        "real", rawData, nbBars, parseFloat(query.min_submission_grade), parseFloat(query.max_submission_grade));
     if (bars) {
         const data = bars["bars"];
         const labels = bars["labels"];
@@ -95,12 +95,19 @@ function makeGradeDistroChart(query, rawData) {
         _showEmptyChart();
     }
 }
-function makeNbSubmissionsBfPerfectChart(query, data) {
-    const min = 10; // TODO find min from data
-    const max = 31; // TODO find max from data // TODO max is not included
-    const processedData = _groupBars(data);
-    const labels = _createConsecutiveLabels(min, max);
-    _displayChart("bar", labels, data);
+function makeNbSubmissionsBfPerfectChart(query, rawData) {
+    const min = 0;
+    const nbBars = 100;
+    const bars = _computeBarSizes(
+        "discrete", rawData, nbBars, min
+    )
+    if (bars) {
+        const data = bars["bars"];
+        const labels = bars["labels"];
+        _displayChart("bar", labels, data);
+    } else {
+        _showEmptyChart();
+    }
 }
 function makeLinePerSubmissionChart(query, data) {
     const min = 5; // TODO find min from data
@@ -117,7 +124,7 @@ function makeTagSortedChart(query, data) {
 }
 
 
-function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
+function _computeBarSizes(discreteOrReal, rawData, nbBuckets, min=undefined, max=undefined) {
     if (min === undefined)
         min =  Math.min.apply(null, rawData);
     if (max === undefined)
@@ -140,16 +147,24 @@ function _computeBarSizes(rawData, nbBuckets, min=undefined, max=undefined) {
     
 
     let labels = [];
-    for (let i = 0; i < nbBuckets-1; i++) {
-        const startBucket = min + i*valuesPerBucket;
-        const endBucket = min + (i+1)*valuesPerBucket;
-        labels.push(startBucket + " to " + endBucket);
-    }
-    const startLastBucket = min + (nbBuckets-1)*valuesPerBucket;
-    if (startLastBucket == max)
+    if (discreteOrReal == "real" || valuesPerBucket > 1) {
+        for (let i = 0; i < nbBuckets-1; i++) {
+            const startBucket = min + i*valuesPerBucket;
+            const endBucket = min + (i+1)*valuesPerBucket;
+            labels.push(startBucket + " to " + endBucket);
+        }
+        const startLastBucket = min + (nbBuckets-1)*valuesPerBucket;
+        if (startLastBucket == max)
+            labels.push(max);
+        else
+            labels.push(startLastBucket + " to " + max);
+    } else { // discrete
+        for (let i = 0; i < nbBuckets-1; i++) {
+            const startBucket = min + i*valuesPerBucket;
+            labels.push(startBucket);
+        }
         labels.push(max);
-    else
-        labels.push(startLastBucket + " to " + max);
+    }
 
     return {"bars": result, "labels": labels};
 }

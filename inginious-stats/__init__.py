@@ -235,7 +235,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         result = {}
         for x in task_data:
-            print("TASK DATA: " + str(x))
             username = x["username"][0]
             if x["grade"] < minimum or x["grade"] > maximum:
                 if x["result"] == "success":
@@ -314,8 +313,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             for tag in tag_list:
                 if tag in task["tags"]:
                     add = True
-            print("asked: '" + str(exec_list) + "' name: '" + str(task["name"].strip()) + "'")
-            print(len(exec_list))
             if (len(exec_list) == 0 or task["name"].strip() in exec_list) and add:
                 all_result.append(task)
 
@@ -375,28 +372,24 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 data = self._get_all_distribution(courseid, tasks, daterange, exercises, tags)
             else:  # "best
                 data = self._get_best_distribution(courseid, tasks, daterange, exercises, tags)
-            print("DB RETURNED")
-            print(data)
 
             if data is not None:
                 # all_grades = aggregate_all_grades(data)
                 all_grades = apply_grade_filter(data, grade_bounds)
-                print("FILTERED "*3)
-                print(all_grades)
                 statistics = compute_advanced_stats(all_grades)
                 if statistics is not None:
                     statistics["raw_data"] = all_grades
 
         elif chart_type == "submission-before-perfect":
             data = self._get_before_perfect(courseid, tasks, daterange, exercises, grade_bounds)
-            print("DB RETURNED")
-            print(data)
             if data is not None:
                 all_tries = process_nb_attempts_dict(data)
                 statistics = compute_advanced_stats(all_tries)
                 if statistics is not None:
                     statistics["raw_data"] = all_tries
 
+        print("DB RETURNED")
+        print(data)
         print("FINALLY: " + str(statistics))
 
         course, __ = self.get_course_and_check_rights(courseid)

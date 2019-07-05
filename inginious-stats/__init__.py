@@ -457,7 +457,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             print("NB: " + str(nb_submissions_per_time))
 
         if "times" not in statistics:
-            statistics["times"] = 0  # Placeholder
+            statistics["times"] = []  # Placeholder
         print("DB RETURNED")
         print(data)
         print("FINALLY: " + str(statistics))

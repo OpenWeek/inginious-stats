@@ -150,9 +150,10 @@ $if chart_query is not None:
                 data = $data["raw_data"];
                 times = [];
                 /*
-                $for t in data["times"]:
-                //*/
-                    times.push("$t");
+                $if len(data["times"]) > 0:
+                    $for t in data["times"]:
+                        //*/
+                            times.push("$t");
           //*/
 
           fillFilters(chartQuery);

@@ -279,14 +279,14 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         timestamps = []
         submissions_per_timestamp = []
         for x in task_data:
-            if timestamp and x["submitted_on"] == timestamps[-1] :
+            if timestamps and [x["submitted_on"]] == timestamps[-1] :
                 submissions_per_timestamp[-1] += 1
             else :
-                timestamps += x["submitted_on"]
+                timestamps += [x["submitted_on"]]
                 submissions_per_timestamp += [1]
-        
+
         return (timestamps, submissions_per_timestamp)
-    
+
     def _tags_stats(self, courseid, tasks, daterange):
         """
         Get aggregated statistics about the submissions grouped by tags
@@ -369,6 +369,12 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         data = self._get_task_failed_attempts(courseid, tasks_id, daterange, grade_bounds)
         return data
 
+    def _get_submissions_per_time(self, courseid, tasks, daterange, exec_list, grade_bounds):
+        #TODO doc
+        tasks_id = self._get_ids_from_name(tasks, exec_list)
+        data = self._get_submissions_by_time(courseid, tasks_id, daterange, grade_bounds)
+        return data
+
     def _get_ids_from_name(self, tasks, exec_list):
         all_tasks_id = []
         for t in tasks:
@@ -419,6 +425,11 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 statistics = compute_advanced_stats(all_tries)
                 if statistics is not None:
                     statistics["raw_data"] = all_tries
+
+        elif chart_type == "submissions-time":
+            (times, nb_submissions_per_time) = self._get_submissions_per_time(courseid, tasks, daterange, exercises, grade_bounds)
+            print("TIMES: " + str(times))
+            print("NB: " + str(nb_submissions_per_time))
 
         print("DB RETURNED")
         print(data)

@@ -77,6 +77,11 @@ const chartTypeCorrespondence = {
     "submissions-time": makeSubmissionTimeGraph,
     "tag-sorted": makeTagSortedChart
 }
+const labels = {
+    "grades-distribution": [],
+    "submission-before-perfect": [],
+    "submissions-time": []
+}
 
 function makeChart(chartQuery, dataPoints, times) {
     /* Creates the chart requested by the user and adds it to the page. */
@@ -111,7 +116,7 @@ function makeGradeDistroChart(query, rawData) {
     if (bars) {
         const data = bars["bars"];
         const labels = bars["labels"];
-        _displayChart("bar", labels, data);
+        _displayChart("bar", labels, data, "Grade", "Number of submissions");
     } else {
         _showEmptyChart();
     }
@@ -125,7 +130,7 @@ function makeNbSubmissionsBfPerfectChart(query, rawData) {
     if (bars) {
         const data = bars["bars"];
         const labels = bars["labels"];
-        _displayChart("bar", labels, data);
+        _displayChart("bar", labels, data, "Number of submissions", "Number of students");
     } else {
         _showEmptyChart();
     }
@@ -138,7 +143,7 @@ function makeLinePerSubmissionChart(query, data) {
     _displayChart("bar", labels, data);
 }
 function makeSubmissionTimeGraph(query, data, times) {
-    _displayChart("line", times, data);
+    _displayChart("line", times, data, "Date", "Number of submissions");
 }
 function makeTagSortedChart(query, data) {
     _displayChart("bar", ["Timeout", "Segfault", "Cannot compile", "Could compile"], data);
@@ -256,7 +261,7 @@ function _createConsecutiveLabels(min, max, maxNbGroups=maxNbBars) {
     return labels;
 }
 
-function _displayChart(type, labels, data) {
+function _displayChart(type, labels, data, xLabel="Grade", yLabel="Number of submissions") {
     var ctx = document.getElementById('canvas').getContext('2d');
     var myChart = new Chart(ctx, {
         type: type,
@@ -291,7 +296,7 @@ function _displayChart(type, labels, data) {
                 xAxes: [{
                     scaleLabel: {
                         display: true,
-                        labelString: 'Grade'
+                        labelString: xLabel
                     }
                 }],
                 yAxes: [{
@@ -300,7 +305,7 @@ function _displayChart(type, labels, data) {
                     },
                     scaleLabel: {
                         display: true,
-                        labelString: 'Number of submissions'
+                        labelString: yLabel
                     }
                 }]
             }

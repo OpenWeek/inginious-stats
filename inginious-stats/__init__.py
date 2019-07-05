@@ -132,23 +132,15 @@ def compute_advanced_stats(data):
     if count == 0:
         return None
 
-    minimum = np.amin(data)
-    maximum = np.amax(data)
-    mean = np.mean(data)
-    median = np.median(data)
-    mode = stats.mode(data).mode[0]
-    variance = np.var(data)
-    std_deviation = np.sqrt(variance)
-
     return {
         "count": count,
-        "min": minimum,
-        "max": maximum,
-        "mean": mean,
-        "median": median,
-        "mode": mode,
-        "variance": variance,
-        "std_deviation": std_deviation
+        "min": np.amin(data),
+        "max": np.amax(data),
+        "mean": np.mean(data),
+        "median": np.median(data),
+        "mode": stats.mode(data).mode[0],
+        "variance": np.var(data),
+        "std_deviation": np.std(data)
     }
 
 

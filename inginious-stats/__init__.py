@@ -156,8 +156,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "username": x["username"],
              "maxGrade": x["maxGrade"],
              "allGrades": x["allGrades"],
-             "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
-             #"tags": [y for y in x["tags"]],
+             # "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
+             "tags": [y for y in x["tags"]],
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
         ]
@@ -353,16 +353,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         if len(all_result) == 0:
             return None
 
-        #Aggregate stats
-        # for elem in all_result[1:]:
-        #     all_result[0]["submissions"] += elem["submissions"]
-        #     all_result[0]["validSubmissions"] += elem["validSubmissions"]
-        #     all_result[0]["averageGrade"] = (all_result[0]["averageGrade"] * len(all_result[0]["allGrades"])
-        #                                     + elem["averageGrade"]*len(elem["allGrades"])) / (len(all_result[0]["allGrades"]) + len(elem["allGrades"]))
-        #     all_result[0]["allGrades"] = [item for sublist in all_result[0]["allGrades"] for item in  elem["allGrades"]]
-        #     all_result[0]["minGrade"] = min(all_result[0]["allGrades"])
-        #     all_result[0]["maxGrade"] = max(all_result[0]["allGrades"])
-        # return all_result[0]  # TODO check correctness
         return aggregate_all_grades(all_result)
 
     def _get_best_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
@@ -437,12 +427,13 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                 statistics = compute_advanced_stats(all_grades)
                 if statistics is not None:
                     statistics["all_grades"] = all_grades
-                    
+
         elif chart_type == "submission-before-perfect":
             data = self._get_before_perfect(courseid, tasks, daterange, exercises)
             print(data)
             if data is not None:
-                    statistics = None
+                statistics = None
+
         course, __ = self.get_course_and_check_rights(courseid)
         return self.template_helper.get_custom_renderer(os.path.join(PATH_TO_PLUGIN, 'templates')).adv_stats(course, chart_query, statistics)
 

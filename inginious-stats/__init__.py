@@ -279,10 +279,11 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         timestamps = []
         submissions_per_timestamp = []
         for x in task_data:
-            if timestamps and [x["submitted_on"]] == timestamps[-1] :
+            current_date = x["submitted_on"].date().isoformat()
+            if timestamps and current_date == timestamps[-1] :
                 submissions_per_timestamp[-1] += 1
             else :
-                timestamps += [x["submitted_on"]]
+                timestamps.append(current_date)
                 submissions_per_timestamp += [1]
 
         return (timestamps, submissions_per_timestamp)

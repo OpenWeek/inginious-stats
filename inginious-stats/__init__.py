@@ -279,7 +279,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         timestamps = []
         submissions_per_timestamp = []
         for x in task_data:
-            if timestamp or x["submitted_on"] == timestamps[-1] :
+            if timestamp and x["submitted_on"] == timestamps[-1] :
                 submissions_per_timestamp[-1] += 1
             else :
                 timestamps += x["submitted_on"]

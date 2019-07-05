@@ -1,6 +1,9 @@
 # inginious-stats
 Plugin INGInious to improve stats view in the course administration
 
+Created by a team at *OpenWeek2019*:
+Florian Damhaut, Céline Deknop, Simon Gustin and Maxime Mawait
+
 ## Installing
 ### Editable mode
 

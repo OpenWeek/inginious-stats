@@ -1,4 +1,11 @@
 /* JS for template */
+
+/*
+Plugin for INGInious released under AGPL-3.0
+Created by a team at OpenWeek2019
+Florian Damhaut, Céline Deknop, Simon Gustin and Maxime Mawait
+*/
+
 function checkMinMax() {
     /* Checks that the min and max (for grades) provided by the user are valid. */
     let min = $("#min_submission_grade")[0].value;

@@ -1,3 +1,9 @@
+"""
+Plugin for INGInious released under AGPL-3.0
+Created by a team at OpenWeek2019
+Florian Damhaut, Céline Deknop, Simon Gustin and Maxime Mawait
+"""
+
 import os
 import web
 from urllib.parse import parse_qs
@@ -232,7 +238,6 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
         result = {}
         for x in task_data:
-            print("TASK DATA: " + str(x))
             username = x["username"][0]
             task_id = x["taskid"]
             if username not in result:

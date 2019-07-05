@@ -263,7 +263,7 @@ function _displayChart(type, labels, data, xLabel="Grade", yLabel="Number of sub
         data: {
             labels: labels,
             datasets: [{
-                label: 'Placeholder',
+                label: 'Data',
                 data: data,
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 // backgroundColor: [

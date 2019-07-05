@@ -156,8 +156,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              "username": x["username"],
              "maxGrade": x["maxGrade"],
              "allGrades": x["allGrades"],
-             "tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
-             #"tags": [y for y in x["tags"]],
+             #"tags": [y[0].get_name() if len(y) == 1 else "" for y in tasks[x["_id"]].get_tags()],
+             "tags": [y for y in x["tags"]],
              "validSubmissions": x["validSubmissions"]}
             for x in stats_tasks
         ]
@@ -332,23 +332,21 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
         print("="*20 + "TAGS STATS" + "="*20)
         print(stats_tags)
         all_result = []
+        
         for tag in tag_list:
             all_result.append(stats_tags[tag]) #Get the stats about wanted tags
-
+            
         stats_exec = self._tasks_stats(courseid, tasks, daterange) #Get other exercices
         print("="*20 + "EXERCISES STATS" + "="*20)
         print(stats_exec)
         for task in stats_exec: #Add any missing exercices
-            add = True
+            add = False
             for tag in tag_list:
                 if tag in task["tags"]:
-                    add = False
+                    add = True
             print("asked: '" + str(exec_list) + "' name: '" + str(task["name"].strip()) + "'")
-            print(len(exec_list))
             if (len(exec_list) == 0 or task["name"].strip() in exec_list) and add:
-                print("test")
                 all_result.append(task)
-                print("all result is now: " + str(all_result))
 
         if len(all_result) == 0:
             return None

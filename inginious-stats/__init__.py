@@ -40,15 +40,13 @@ def parse_query(query):
     @return: a tuple with all the relevant query information
     """
     # Date range
+    start_time = datetime.min
     if query.stats_to is not None and query.stats_to != "":
         start_time = date_parse(query.stats_to)
-    else:
-        start_time = datetime.min
 
+    end_time = datetime.now().replace(minute=0, second=0, microsecond=0)
     if query.stats_from is not None and query.stats_from != "":
         end_time = date_parse(query.stats_from)
-    else:
-        end_time = datetime.now().replace(minute=0, second=0, microsecond=0)
 
     date_range = [start_time, end_time]
 
@@ -68,12 +66,14 @@ def parse_query(query):
         if percentage.endswith('%'):
             percentage = percentage[:-1]
         min_grade = float(percentage)
+
     max_grade = 100
     if query.max_submission_grade is not None and query.max_submission_grade != "":
         percentage = query.max_submission_grade
         if percentage.endswith('%'):
             percentage = percentage[:-1]
         max_grade = float(percentage)
+
     grade_bounds = (min_grade, max_grade)
 
     return (query.chart_type, date_range, exercise_list, tag_list, grade_bounds, query.submissions_filter)

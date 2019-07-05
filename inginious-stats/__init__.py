@@ -171,7 +171,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
                          "submissions": {"$sum": 1}, "validSubmissions":
                  {"$sum": {"$cond": {"if": {"$eq": ["$result", "success"]}, "then": 1, "else": 0}}},
                          "tags": {"$first": "$tests"}}
-              }])
+             }]
+        )
 
         return [
             {"_id": x["_id"],
@@ -202,7 +203,9 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
              {"$unwind":"$username"},
              {"$group": {"_id": "$_id", "grade": {"$first": "$grade"}, "task": {"$first": "$taskid"},
                          "username": {"$first": "$username"}, "tags": {"$first": "$tests"}}
-              }])
+             }]
+        )
+
         temp_dict = {}
         for sub in all_submissions:
             if sub["username"]+str(sub["task"]) in temp_dict:

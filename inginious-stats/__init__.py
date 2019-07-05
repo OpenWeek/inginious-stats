@@ -162,7 +162,7 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             for x in stats_tasks
         ]
 
-    def _get_best_submissions(self, courseid, tasks, daterange):
+    def _get_best_submissions(self, courseid, tasks, tasks_id, daterange):
         """
             Gives a list of only the best submission for each studentourseid
             :param: - courseid: id of an inginious course
@@ -171,7 +171,8 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
             :return: list of dict containing all best submissions per user
         """
         all_submissions = self.database.submissions.aggregate(
-            [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid}},
+            [{"$match": {"submitted_on": {"$gte": daterange[0], "$lt": daterange[1]}, "courseid": courseid,
+              "taskid": {"$in":tasks_id}}},
              {"$unwind":"$username"},
              {"$group": {"_id": "$_id", "grade": {"$first": "$grade"}, "task": {"$first": "$taskid"},
                          "username": {"$first": "$username"}, "tags": {"$first": "$tests"}}
@@ -367,22 +368,26 @@ class AdvancedCourseStatisticClass(INGIniousAdminPage):
 
     def _get_best_distribution(self, courseid, tasks, daterange, exec_list, tag_list):
         #TODO doc
-        best = self._get_best_submissions(courseid, tasks, daterange)
+        tasks_id = self._get_ids_from_name(tasks, exec_list)
+        
+        best = self._get_best_submissions(courseid, tasks, tasks_id, daterange)
         result = []
-        print(best)
         for submission in best:
             result.append(submission["grade"])
         return result
 
     def _get_before_perfect(self, courseid, tasks, daterange, exec_list):
         #TODO doc
+        tasks_id = self._get_ids_from_name(tasks, exec_list)
+        data = self._get_task_failed_attempts(courseid, tasks_id, daterange)
+        return data
+
+    def _get_ids_from_name(self, tasks, exec_list):
         all_tasks_id = []
         for t in tasks:
-            if t in exec_list:
+            if tasks[t]._name.strip() in exec_list:
                 all_tasks_id.append(tasks[t].get_id())
-        print(all_tasks_id)
-        data = self._get_task_failed_attempts(courseid, all_tasks_id, daterange)
-        return data
+        return all_tasks_id
 
     def GET_AUTH(self, courseid, f=None, t=None):
         """ GET Request """

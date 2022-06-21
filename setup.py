@@ -8,7 +8,7 @@ setup(
     version="0.1dev0",
     description="Plugin to add demo an improved statistic page in course administration",
     packages=find_packages(),
-    install_requires=["inginious>=0.5.dev0", "python-dateutil==2.6.1", "numpy==1.15.0", "scipy==1.0.0"],
+    install_requires=["inginious>=0.5.dev0", "python-dateutil==2.6.1", "numpy==1.22.0", "scipy==1.0.0"],
     tests_require=[],
     extras_require={},
     scripts=[],
